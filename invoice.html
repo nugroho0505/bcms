@@ -236,7 +236,7 @@ function terbilang(nilai) {
 
 
 document.getElementById("terbilang").innerText =
-"Terbilang : " + terbilang(85397600) + " rupiah";
+"Terbilang : " + terbilang(Math.round(grandTotal)) + " rupiah";
 const p = new URLSearchParams(window.location.search);
 
 function renderTable() {
@@ -303,8 +303,12 @@ function setHeader(){
     document.getElementById("currency").innerText = p.get("currency") || "-";
     
 }
+    window.onload = function(){
 
-setHeader();
+    renderTable();
+    setHeader();
+
+}
 
 </script>
 
