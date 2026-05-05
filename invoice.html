@@ -255,24 +255,22 @@ function renderTable() {
 
         let col = row.split("|");
 
-        let kode    = col[0] || "";
-        let nama    = col[1] || "";
-        let packing = col[2] || "";
-        let qty     = Number(col[3]) || 0;
-        let satuan  = col[4] || "";
-        let harga   = Number(col[5]) || 0;
-        let total   = Number(col[6]) || 0;
+let kode   = col[0] || "";
+let nama   = col[1] || "";
+let qty    = Number(col[2]) || 0;
+let satuan = col[3] || "";
+let harga  = Number(col[4]) || 0;
+let total  = Number(col[5]) || 0;
 
         tbody += `
-        <tr>
-            <td>${kode}</td>
-            <td>${nama}</td>
-            <td>${packing}</td>
-            <td class="right">${qty.toLocaleString("id-ID")}</td>
-            <td>${satuan}</td>
-            <td class="right">${harga.toLocaleString("id-ID")}</td>
-            <td class="right">${total.toLocaleString("id-ID")}</td>
-        </tr>
+       <tr>
+    <td>${kode}</td>
+    <td>${nama}</td>
+    <td class="right">${qty.toLocaleString("id-ID")}</td>
+    <td>${satuan}</td>
+    <td class="right">${harga.toLocaleString("id-ID")}</td>
+    <td class="right">${total.toLocaleString("id-ID")}</td>
+</tr>
         `;
     });
 
