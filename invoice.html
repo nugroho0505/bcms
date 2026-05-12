@@ -158,7 +158,7 @@ th, td{ padding:4px; }
            <div>Tanggal<br><b id="tanggal"></b></div>
             <div>Nomor<br><b id="no"></b></div>
 
-            <div>TOP<br><b>CASH</b></div>
+            <div>TOP<br><b id="top"</b></div>
             <div>Jatuh Tempo<br><b id="jatuhTempo"></b></div>
 
             <div>Ekspedisi<br><b>-</b></div>
@@ -322,6 +322,8 @@ function setHeader(){
 
     document.getElementById("tglKirim").innerText =
         p.get("tglKirim") || "-";
+    document.getElementById("top").innerText=
+        p.get("top") || "-";
 }
 
 window.onload = function(){
