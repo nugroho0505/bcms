@@ -164,7 +164,7 @@ th, td{ padding:4px; }
             <div>TOP<br><b id="top"</b></div>
             <div>Jatuh Tempo<br><b id="jatuhTempo"></b></div>
 
-            <div>Ekspedisi<br><b>-</b></div>
+            <div>Ekspedisi<br><b id="xpdc"></b></div>
             <div>Tanggal Pengiriman<br><b id="tglKirim"></b></div>
 
             <div>PO No<br><b>-</b></div>
@@ -327,6 +327,10 @@ function setHeader(){
         p.get("tglKirim") || "-";
     document.getElementById("top").innerText=
         p.get("top") || "-";
+     document.getElementById("xpdc").innerText=
+        p.get("xpdc") || "-";
+
+
 }
 
 window.onload = function(){
