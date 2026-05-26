@@ -83,15 +83,43 @@ th, td{ padding:4px; }
     margin-top:5px;
 }
 
-.footer-left{
-    width:60%;
-    border:1px solid #000;
-    padding:5px;
+/* KOREKSI LAYOUT FOOTER */
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    gap: 5px;
 }
 
-.footer-right{
-    width:38%;
-    border:1px solid #000;
+.footer-left-rekening {
+    width: 60%;
+    border: 1px solid #000;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.footer-right-summary {
+    width: 38%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.summary-table, .riwayat-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.riwayat-table th {
+    background: #f5f5f5;
+    font-weight: bold;
+}
+
+.sub-terbilang {
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 2px;
+    color: #333;
 }
 
 .sign-box{
@@ -102,23 +130,6 @@ th, td{ padding:4px; }
 }
 
 .print-btn{ margin-bottom:10px; }
-
-/* CSS Tambahan untuk Riwayat Pembayaran */
-.riwayat-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 5px;
-}
-.riwayat-table th {
-    background: #f5f5f5;
-    font-weight: bold;
-}
-.sub-terbilang {
-    font-size: 11px;
-    font-style: italic;
-    margin-top: 2px;
-    color: #333;
-}
 
 @media print{
     .print-btn{ display:none; }
@@ -133,13 +144,10 @@ th, td{ padding:4px; }
 
 <div class="container">
 
-<!-- HEADER -->
 <div class="flex">
 
-    <!-- LEFT -->
     <div class="header-left">
 
-        <!-- BRAND + LOGO -->
         <div style="display:flex; align-items:center; gap:12px;">
             <img class="logo" src="logobcms.png">
 
@@ -148,7 +156,6 @@ th, td{ padding:4px; }
             </div>
         </div>
 
-        <!-- ALAMAT -->
         <div style="margin-top:6px;">
             Dusun blanakan rt/rw 003/002  <br>
             Desa Wonodadi - Kec Buayan <br>
@@ -167,7 +174,6 @@ th, td{ padding:4px; }
         Indonesia
     </div>
 
-    <!-- RIGHT -->
     <div class="faktur-box">
         <div class="title">FAKTUR PEMBELIAN</div>
 
@@ -188,7 +194,6 @@ th, td{ padding:4px; }
 
 </div>
 
-<!-- TABLE -->
 <table>
 <tr>
 <th>Kode</th>
@@ -203,49 +208,46 @@ th, td{ padding:4px; }
 
 <div id="terbilang">Terbilang : -</div>
 
-<!-- FOOTER -->
-<div class="flex" style="margin-top:5px;">
-    <div class="footer-left">
+<div class="footer-container">
+    
+    <div class="footer-left-rekening">
         Keterangan :<br><br>
         BRI 6691 0101 5718 506 a/n Yohanes purwanto
     </div>
 
-    <div class="footer-right">
-        <table>
+    <div class="footer-right-summary">
+        <table class="summary-table">
             <tr><td>Sub Total</td><td class="right" id="subtotal"></td></tr>
             <tr><td>Diskon</td><td class="right">0</td></tr>
             <tr><td>PPN</td><td class="right">0</td></tr>
             <tr><td>Biaya</td><td class="right">0</td></tr>
             <tr><td><b>Total</b></td><td class="right"><b id="grandTotal"></b></td></tr>
         </table>
+
+        <div id="section-riwayat" style="display:none; margin-top:5px;">
+            <div style="font-weight:bold; text-decoration:underline; margin-bottom:3px;">Riwayat Pembayaran:</div>
+            <table class="riwayat-table">
+                <thead>
+                    <tr>
+                        <th>Tgl Bayar</th>
+                        <th>Jenis</th>
+                        <th style="text-align:right;">Bayar</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-riwayat"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" style="text-align:right; font-weight:bold;">Sisa:</td>
+                        <td class="right" style="font-weight:bold;" id="sisa-bayar"></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div id="terbilang-sisa" class="sub-terbilang"></div>
+        </div>
     </div>
+
 </div>
 
-<!-- RIWAYAT PEMBAYARAN (Hanya muncul jika TOP memiliki nilai/Tempo) -->
-<div id="section-riwayat" style="display:none; margin-top:10px;">
-    <div style="font-weight:bold; text-decoration:underline; margin-bottom:3px;">Riwayat Pembayaran:</div>
-    <table class="riwayat-table">
-        <thead>
-            <tr>
-                <th>Tgl Bayar</th>
-                <th>Jenis Bayar</th>
-                <th style="text-align:right;">Bayar</th>
-            </tr>
-        </thead>
-        <tbody id="tbody-riwayat">
-            <!-- Data riwayat masuk disini -->
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="2" style="text-align:right; font-weight:bold;">Sisa Pembayaran:</td>
-                <td class="right" style="font-weight:bold;" id="sisa-bayar"></td>
-            </tr>
-        </tfoot>
-    </table>
-    <div id="terbilang-sisa" class="sub-terbilang"></div>
-</div>
-
-<!-- SIGN -->
 <div class="flex" style="margin-top:10px;">
     <div class="sign-box">Disiapkan Oleh<br><br><br>(__________)<br>Tgl</div>
     <div class="sign-box">Disetujui Oleh<br><br><br>(__________)<br>Tgl</div>
@@ -311,26 +313,22 @@ function renderTable() {
     document.getElementById("subtotal").innerText = grandTotal.toLocaleString("id-ID");
     document.getElementById("terbilang").innerText = "Terbilang : " + terbilang(grandTotal) + " rupiah";
 
+    // LOGIKA FILTER TOP UNTUK RIWAYAT PEMBAYARAN
     let topValue = (p.get("top") || "-").trim().toLowerCase();
-    
     if (topValue === "cash" || topValue === "-" || topValue === "") {
         document.getElementById("section-riwayat").style.display = "none";
     } else {
-        // Jika selain 'cash' (berarti Tempo/Credit), jalankan fungsi riwayat
         renderRiwayat(grandTotal);
     }
 }
 
 function renderRiwayat(grandTotal) {
-    // Mengambil data riwayat dari parameter URL "bayar"
-    // Format URL contoh: &bayar=2026-03-01|Transfer|5000000,2026-03-15|Tunai|2000000
     let bayarParam = p.get("bayar") || "";
     if (!bayarParam) {
-        // Jika statusnya tempo tetapi belum ada cicilan masuk sama sekali
         document.getElementById("section-riwayat").style.display = "block";
         document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran</td></tr>`;
         document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
-        document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(grandTotal) + " rupiah";
+        document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
         return;
     }
 
@@ -361,9 +359,8 @@ function renderRiwayat(grandTotal) {
 
     document.getElementById("tbody-riwayat").innerHTML = tbodyRiwayat;
     document.getElementById("sisa-bayar").innerText = sisaBayar.toLocaleString("id-ID");
-    document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(sisaBayar) + " rupiah";
+    document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaBayar) + " rupiah";
     
-    // Tampilkan section riwayat
     document.getElementById("section-riwayat").style.display = "block";
 }
 
