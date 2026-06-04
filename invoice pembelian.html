@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Faktur Pembelian</title>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
 body{
     font-family: monospace;
@@ -375,9 +378,61 @@ function setHeader(){
     document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
 }
 
+// 🎯 DI SINI PROSES UTAMA UNTUK NOTIFIKASI PILIHAN AKSI KETIKA DATA LOADED SAMA SEPERTI DI PENJUALAN
 window.onload = function(){
     renderTable();
     setHeader();
+
+    // Mengambil parameter URL untuk keperluan teks rangkuman share
+    const noFaktur = p.get("no") || "-";
+    const namaVendor = p.get("customer") || "-";
+    const totalBeli = Number(p.get("grand")) || 0;
+
+    // Menampilkan Alert Pilihan Utama dengan tema yang selaras dengan dokumen cetak
+    Swal.fire({
+        title: 'FAKTUR PEMBELIAN SIAP!',
+        html: `Faktur No: <b>${noFaktur}</b> dari/kepada: <b>${namaVendor}</b> berhasil dimuat.<br>Silakan tentukan tindakan selanjutnya:`,
+        icon: 'info',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: '<i class="fa fa-print"></i> Cetak Faktur',
+        denyButtonText: '<i class="fa fa-share-alt"></i> Bagikan',
+        cancelButtonText: 'Tutup',
+        confirmButtonColor: '#10b981', // Hijau Premium untuk Print
+        denyButtonColor: '#3b82f6',    // Biru Premium untuk Share
+        cancelButtonColor: '#6b7280',  // Abu-abu untuk batal/tutup biasa
+        allowOutsideClick: false
+    }).then((result) => {
+        
+        // 🖨️ OPSI 1: TOMBOL CETAK DIKLIK
+        if (result.isConfirmed) {
+            window.print();
+        } 
+        
+        // 📲 OPSI 2: TOMBOL BAGIKAN DIKLIK
+        else if (result.isDenied) {
+            const teksBagikan = `Faktur Pembelian - BCMS\nNomor: ${noFaktur}\nVendor/Supplier: ${namaVendor}\nTotal Transaksi: Rp ${totalBeli.toLocaleString("id-ID")}\n\nLink Akses: ${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Faktur Pembelian BCMS',
+                    text: teksBagikan,
+                    url: window.location.href
+                }).catch((err) => {
+                    console.log('Proses share dibatalkan:', err);
+                });
+            } else {
+                // Fallback otomatis jika dibuka melalui peranti PC desktop yang tidak mendukung Native Web Share
+                navigator.clipboard.writeText(teksBagikan);
+                Swal.fire({
+                    title: 'Berhasil Disalin!',
+                    text: 'Fitur sharing otomatis tidak didukung oleh browser ini. Rangkuman data & tautan faktur pembelian telah berhasil disalin ke clipboard bapak.',
+                    icon: 'success',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+    });
 }
 </script>
 
