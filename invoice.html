@@ -401,6 +401,7 @@ function setHeader(){
 }
 
 // 🎯 PROSES UTAMA: SETELAH LOAD DATA LANGSUNG MUNCULKAN PILIHAN CETAK DAN BAGIKAN PDF
+// 🎯 PERBAIKAN TOMBOL: SEKARANG ADA 3 TOMBOL (CETAK, BAGIKAN PDF, DAN TUTUP)
 window.onload = function(){
     renderTable();
     setHeader();
@@ -412,20 +413,23 @@ window.onload = function(){
         html: `Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan tentukan tindakan bapak:`,
         icon: 'info',
         showCancelButton: true,
+        showDenyButton: true,
         confirmButtonText: '<i class="fa fa-print"></i> Cetak',
-        cancelButtonText: '<i class="fa fa-share-alt"></i> Bagikan PDF',
+        denyButtonText: '<i class="fa fa-share-alt"></i> Bagikan PDF',
+        cancelButtonText: 'Tutup',
         confirmButtonColor: '#10b981', // Hijau untuk Cetak
-        cancelButtonColor: '#3b82f6',  // Biru untuk Bagikan PDF asli
+        denyButtonColor: '#3b82f6',    // Biru untuk Bagikan PDF
+        cancelButtonColor: '#6b7280',  // Abu-abu untuk Tutup
         allowOutsideClick: false
     }).then((result) => {
         
-        // 🖨️ OPSI 1: TOMBOL CETAK DIKLIK
+        // 🖨️ OPSI 1: TOMBOL CETAK DIKLIK (Confirm)
         if (result.isConfirmed) {
             window.print();
         } 
         
-        // 📄 OPSI 2: TOMBOL BAGIKAN PDF DIKLIK (Membuka laci share HP)
-        else if (result.dismiss === Swal.DismissReason.cancel) {
+        // 📄 OPSI 2: TOMBOL BAGIKAN PDF DIKLIK (Denied)
+        else if (result.isDenied) {
             Swal.fire({
                 title: 'Menyiapkan Dokumen PDF...',
                 text: 'Sedang memproses faktur menjadi file PDF, mohon tunggu.',
@@ -436,7 +440,6 @@ window.onload = function(){
             const elemenFaktur = document.getElementById('faktur-area');
             const namaFilePdf = `Faktur_Penjualan_${noFaktur}.pdf`;
             
-            // Konfigurasi konversi agar simetris, pas ukuran A4, dan beresolusi tajam
             const opsiSetting = {
                 margin:       [8, 8, 8, 8],
                 filename:     namaFilePdf,
@@ -445,11 +448,9 @@ window.onload = function(){
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Membuat Blob data PDF untuk dikirimkan langsung ke sistem internal HP
             html2pdf().set(opsiSetting).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
                 const filePdfSiapKirim = new File([pdfBlob], namaFilePdf, { type: 'application/pdf' });
 
-                // Jika browser HP mendukung Web Share API, langsung lempar file PDF ke WA
                 if (navigator.canShare && navigator.canShare({ files: [filePdfSiapKirim] })) {
                     Swal.close();
                     navigator.share({
@@ -458,7 +459,6 @@ window.onload = function(){
                         text: `Berikut terlampir file PDF Faktur No. ${noFaktur}`
                     }).catch((err) => { console.log('Batal share:', err); });
                 } else {
-                    // Fallback download otomatis jika dibuka di komputer PC desktop jadul
                     Swal.close();
                     html2pdf().set(opsiSetting).from(elemenFaktur).save();
                     Swal.fire({
@@ -472,6 +472,11 @@ window.onload = function(){
                 Swal.close();
                 Swal.fire({ title: 'Gagal membuat file', text: err.toString(), icon: 'error' });
             });
+        }
+        
+        // 🛑 OPSI 3: TOMBOL TUTUP DIKLIK (Cancel / Dismiss)
+        else {
+            console.log("Alert ditutup oleh user.");
         }
     });
 }
