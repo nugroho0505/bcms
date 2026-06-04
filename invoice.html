@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Faktur Penjualan</title>
 
+<!-- Menyisipkan SweetAlert2, Font Awesome, dan Html2Pdf.js -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -399,26 +400,22 @@ function setHeader(){
     document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
 }
 
-// 🎯 DI SINI PROSES UTAMA SINKRONISASI ALUR TERBARU SESUAI FAKTUR PEMBELIAN
+// 🎯 PROSES UTAMA: SETELAH LOAD DATA LANGSUNG MUNCULKAN PILIHAN CETAK DAN BAGIKAN PDF
 window.onload = function(){
     renderTable();
     setHeader();
 
     const noFaktur = p.get("no") || "Tanpa_Nomor";
-    const namaCust = p.get("customer") || "Pelanggan";
 
     Swal.fire({
         title: 'FAKTUR PENJUALAN SIAP!',
-        html: `Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan pilih tindakan bapak:`,
+        html: `Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan tentukan tindakan bapak:`,
         icon: 'info',
         showCancelButton: true,
-        showDenyButton: true,
         confirmButtonText: '<i class="fa fa-print"></i> Cetak',
-        denyButtonText: '<i class="fa fa-image"></i> Kirim Gambar (WA)',
-        cancelButtonText: '<i class="fa fa-file-pdf"></i> Kirim PDF',
-        confirmButtonColor: '#10b981', // Hijau Cetak
-        denyButtonColor: '#eab308',    // Kuning Amber Gambar
-        cancelButtonColor: '#3b82f6',  // Biru PDF
+        cancelButtonText: '<i class="fa fa-share-alt"></i> Bagikan PDF',
+        confirmButtonColor: '#10b981', // Hijau untuk Cetak
+        cancelButtonColor: '#3b82f6',  // Biru untuk Bagikan PDF asli
         allowOutsideClick: false
     }).then((result) => {
         
@@ -427,61 +424,11 @@ window.onload = function(){
             window.print();
         } 
         
-        // 🖼️ OPSI 2: TOMBOL KIRIM GAMBAR (WA) DIKLIK
-        else if (result.isDenied) {
-            Swal.fire({
-                title: 'Menyiapkan Gambar HD...',
-                text: 'Sedang memproses faktur menjadi gambar, mohon tunggu.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            const elemenFaktur = document.getElementById('faktur-area');
-            const namaFileGambar = `Faktur_Penjualan_${noFaktur}.png`;
-
-            html2pdf().set({
-                margin: [8, 8, 8, 8],
-                html2canvas: { scale: 2, useCORS: true, width: 800 }
-            }).from(elemenFaktur).output('img').then((imgElement) => {
-                
-                fetch(imgElement.src)
-                .then(res => res.blob())
-                .then(blob => {
-                    const fileGambarSiapKirim = new File([blob], namaFileGambar, { type: 'image/png' });
-
-                    if (navigator.canShare && navigator.canShare({ files: [fileGambarSiapKirim] })) {
-                        Swal.close();
-                        navigator.share({
-                            files: [fileGambarSiapKirim],
-                            title: 'Kirim Gambar Faktur',
-                            text: `Faktur Penjualan No. ${noFaktur}`
-                        }).catch((err) => { console.log('Batal share:', err); });
-                    } else {
-                        Swal.close();
-                        const linkDownload = document.createElement('a');
-                        linkDownload.href = imgElement.src;
-                        linkDownload.download = namaFileGambar;
-                        linkDownload.click();
-                        
-                        Swal.fire({
-                            title: 'Fitur Terbatas',
-                            text: 'Browser tidak mendukung share file gambar langsung. File otomatis diunduh ke perangkat bapak.',
-                            icon: 'warning',
-                            confirmButtonColor: '#eab308'
-                        });
-                    }
-                });
-            }).catch((err) => {
-                Swal.close();
-                Swal.fire({ title: 'Gagal membuat gambar', text: err.toString(), icon: 'error' });
-            });
-        } 
-        
-        // 🔵 OPSI 3: TOMBOL KIRIM PDF DIKLIK
+        // 📄 OPSI 2: TOMBOL BAGIKAN PDF DIKLIK (Membuka laci share HP)
         else if (result.dismiss === Swal.DismissReason.cancel) {
             Swal.fire({
-                title: 'Menyiapkan File PDF...',
-                text: 'Sedang membuat dokumen PDF, mohon tunggu.',
+                title: 'Menyiapkan Dokumen PDF...',
+                text: 'Sedang memproses faktur menjadi file PDF, mohon tunggu.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -489,6 +436,7 @@ window.onload = function(){
             const elemenFaktur = document.getElementById('faktur-area');
             const namaFilePdf = `Faktur_Penjualan_${noFaktur}.pdf`;
             
+            // Konfigurasi konversi agar simetris, pas ukuran A4, dan beresolusi tajam
             const opsiSetting = {
                 margin:       [8, 8, 8, 8],
                 filename:     namaFilePdf,
@@ -497,19 +445,28 @@ window.onload = function(){
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
+            // Membuat Blob data PDF untuk dikirimkan langsung ke sistem internal HP
             html2pdf().set(opsiSetting).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
                 const filePdfSiapKirim = new File([pdfBlob], namaFilePdf, { type: 'application/pdf' });
 
+                // Jika browser HP mendukung Web Share API, langsung lempar file PDF ke WA
                 if (navigator.canShare && navigator.canShare({ files: [filePdfSiapKirim] })) {
                     Swal.close();
                     navigator.share({
                         files: [filePdfSiapKirim],
-                        title: 'Kirim Dokumen Faktur',
-                        text: `Berikut terlampir PDF Faktur Penjualan No. ${noFaktur}`
+                        title: 'Kirim Dokumen Faktur Penjualan',
+                        text: `Berikut terlampir file PDF Faktur No. ${noFaktur}`
                     }).catch((err) => { console.log('Batal share:', err); });
                 } else {
+                    // Fallback download otomatis jika dibuka di komputer PC desktop jadul
                     Swal.close();
                     html2pdf().set(opsiSetting).from(elemenFaktur).save();
+                    Swal.fire({
+                        title: 'File PDF Terunduh',
+                        text: 'Browser ini tidak mendukung share file langsung. Dokumen otomatis disimpan ke folder download bapak.',
+                        icon: 'warning',
+                        confirmButtonColor: '#eab308'
+                    });
                 }
             }).catch((err) => {
                 Swal.close();
