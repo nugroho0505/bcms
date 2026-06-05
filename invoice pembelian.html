@@ -159,7 +159,6 @@ th, td{ padding:4px; }
 
 <body>
 
-<button class="print-btn" onclick="window.print()">🖨️ Cetak</button>
 
 <div class="container" id="faktur-area">
 
@@ -483,7 +482,7 @@ window.onload = function(){
             content.querySelector('#btn-simpan-teks').addEventListener('click', () => {
                 Swal.fire({
                     title: 'Mengunduh PDF...',
-                    text: 'Faktur otomatis disimpan & teks nota disiapkan untuk WhatsApp.',
+                    text: 'Faktur otomatis disimpan.',
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
@@ -499,7 +498,7 @@ window.onload = function(){
                         
                         Swal.fire({
                             title: 'PDF BERHASIL DISIMPAN!',
-                            text: 'File PDF sudah aman di folder Download. Klik tombol di bawah untuk membuka WhatsApp, lalu tempel/lampirkan file PDF tadi secara manual bapak.',
+                            text: 'File PDF sudah di Download. Klik tombol di bawah untuk membuka WhatsApp, lalu tempel/lampirkan file PDF secara manual ',
                             icon: 'success',
                             confirmButtonText: '<i class="fab fa-whatsapp"></i> Lanjut ke WhatsApp',
                             confirmButtonColor: '#25D366',
