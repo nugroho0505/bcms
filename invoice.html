@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Faktur Penjualan</title>
 
-<!-- Menyisipkan SweetAlert2, Font Awesome, dan Html2Pdf.js -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -156,8 +155,6 @@ th, td{ padding:4px; }
 
 <body>
 
-<button class="print-btn" onclick="window.print()">🖨️ Cetak</button>
-
 <div class="container" id="faktur-area">
 
 <div class="flex">
@@ -277,6 +274,7 @@ th, td{ padding:4px; }
 <script>
 const p = new URLSearchParams(window.location.search);
 
+// Fungsi terbilang angka nominal
 function terbilang(nilai) {
     const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
 
@@ -400,43 +398,43 @@ function setHeader(){
     document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
 }
 
-// 🎯 PROSES UTAMA: SETELAH LOAD DATA LANGSUNG MUNCULKAN PILIHAN CETAK DAN BAGIKAN PDF
-// 🎯 PERBAIKAN TOMBOL: SEKARANG ADA 3 TOMBOL (CETAK, BAGIKAN PDF, DAN TUTUP)
+// 🎯 PROSES UTAMA STRATEGI 4 TOMBOL UNTUK FAKTUR PENJUALAN
 window.onload = function(){
     renderTable();
     setHeader();
 
     const noFaktur = p.get("no") || "Tanpa_Nomor";
+    const namaCust = p.get("customer") || "Pelanggan";
+    const grandTotal = Number(p.get("grand")) || 0;
 
     Swal.fire({
         title: 'FAKTUR PENJUALAN SIAP!',
-        html: `Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan tentukan tindakan bapak:`,
+        html: `
+            Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan pilih tindakan bapak:
+            <br><br>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
+                <button id="btn-cetak" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
+                    <i class="fa fa-print"></i> Cetak Faktur
+                </button>
+                
+                <button id="btn-share-laci" class="swal2-styled" style="background-color: #3b82f6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
+                    <i class="fa fa-share-alt"></i> Bagikan PDF (Laci HP)
+                </button>
+                
+                <button id="btn-simpan-teks" class="swal2-styled" style="background-color: #eab308; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
+                    <i class="fa fa-save"></i> Simpan PDF & Kirim Teks
+                </button>
+                
+                <button id="btn-tutup-faktur" class="swal2-styled" style="background-color: #6b7280; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        `,
         icon: 'info',
-        showCancelButton: true,
-        showDenyButton: true,
-        confirmButtonText: '<i class="fa fa-print"></i> Cetak',
-        denyButtonText: '<i class="fa fa-share-alt"></i> Bagikan PDF',
-        cancelButtonText: 'Tutup',
-        confirmButtonColor: '#10b981', // Hijau untuk Cetak
-        denyButtonColor: '#3b82f6',    // Biru untuk Bagikan PDF
-        cancelButtonColor: '#6b7280',  // Abu-abu untuk Tutup
-        allowOutsideClick: false
-    }).then((result) => {
-        
-        // 🖨️ OPSI 1: TOMBOL CETAK DIKLIK (Confirm)
-        if (result.isConfirmed) {
-            window.print();
-        } 
-        
-        // 📄 OPSI 2: TOMBOL BAGIKAN PDF DIKLIK (Denied)
-        else if (result.isDenied) {
-            Swal.fire({
-                title: 'Menyiapkan Dokumen PDF...',
-                text: 'Sedang memproses faktur menjadi file PDF, mohon tunggu.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
+        showConfirmButton: false, // Nonaktifkan tombol bawaan agar bersih
+        allowOutsideClick: false,
+        didOpen: () => {
+            const content = Swal.getHtmlContainer();
             const elemenFaktur = document.getElementById('faktur-area');
             const namaFilePdf = `Faktur_Penjualan_${noFaktur}.pdf`;
             
@@ -448,35 +446,85 @@ window.onload = function(){
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opsiSetting).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
-                const filePdfSiapKirim = new File([pdfBlob], namaFilePdf, { type: 'application/pdf' });
-
-                if (navigator.canShare && navigator.canShare({ files: [filePdfSiapKirim] })) {
-                    Swal.close();
-                    navigator.share({
-                        files: [filePdfSiapKirim],
-                        title: 'Kirim Dokumen Faktur Penjualan',
-                        text: `Berikut terlampir file PDF Faktur No. ${noFaktur}`
-                    }).catch((err) => { console.log('Batal share:', err); });
-                } else {
-                    Swal.close();
-                    html2pdf().set(opsiSetting).from(elemenFaktur).save();
-                    Swal.fire({
-                        title: 'File PDF Terunduh',
-                        text: 'Browser ini tidak mendukung share file langsung. Dokumen otomatis disimpan ke folder download bapak.',
-                        icon: 'warning',
-                        confirmButtonColor: '#eab308'
-                    });
-                }
-            }).catch((err) => {
+            // 🖨️ AKSI 1: CETAK FAKTUR PENJUALAN
+            content.querySelector('#btn-cetak').addEventListener('click', () => {
                 Swal.close();
-                Swal.fire({ title: 'Gagal membuat file', text: err.toString(), icon: 'error' });
+                window.print();
             });
-        }
-        
-        // 🛑 OPSI 3: TOMBOL TUTUP DIKLIK (Cancel / Dismiss)
-        else {
-            console.log("Alert ditutup oleh user.");
+
+            // 📄 AKSI 2: BAGIKAN PDF (Melalui laci share bawaan browser HP modern)
+            content.querySelector('#btn-share-laci').addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Menyiapkan PDF...',
+                    text: 'Sedang memproses berkas, mohon tunggu.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                setTimeout(() => {
+                    html2pdf().set(opsiSetting).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
+                        if (!pdfBlob || pdfBlob.size === 0) { throw new Error("Gagal merender data."); }
+                        const filePdfSiapKirim = new File([pdfBlob], namaFilePdf, { type: 'application/pdf' });
+
+                        if (navigator.canShare && navigator.canShare({ files: [filePdfSiapKirim] })) {
+                            Swal.close();
+                            navigator.share({
+                                files: [filePdfSiapKirim],
+                                title: 'Kirim Dokumen Faktur Penjualan',
+                                text: `Berikut terlampir file PDF Faktur No. ${noFaktur}`
+                            }).catch((err) => { console.log('Batal share:', err); });
+                        } else {
+                            Swal.close();
+                            html2pdf().set(opsiSetting).from(elemenFaktur).save();
+                        }
+                    }).catch((err) => {
+                        Swal.close();
+                        console.error(err);
+                    });
+                }, 800);
+            });
+
+            // 📲 AKSI 3: SIMPAN PDF & KIRIM TEKS NOTA (Solusi anti-gagal untuk semua browser HP)
+            content.querySelector('#btn-simpan-teks').addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Mengunduh PDF...',
+                    text: 'Faktur otomatis disimpan.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                setTimeout(() => {
+                    html2pdf().set(opsiSetting).from(elemenFaktur).save().then(() => {
+                        
+                        let teksWA = `*FAKTUR PENJUALAN - BCMS*\n`;
+                        teksWA += `----------------------------------------\n`;
+                        teksWA += `No Faktur : ${noFaktur}\n`;
+                        teksWA += `Total     : Rp ${grandTotal.toLocaleString("id-ID")}\n`;
+                        teksWA += `----------------------------------------\n`;
+                        
+                        Swal.fire({
+                            title: 'PDF BERHASIL DISIMPAN!',
+                            text: 'File PDF sudah di Download. Klik tombol di bawah untuk membuka WhatsApp, lalu tempel/lampirkan file PDF secara manual ',
+                            icon: 'success',
+                            confirmButtonText: '<i class="fab fa-whatsapp"></i> Lanjut ke WhatsApp',
+                            confirmButtonColor: '#25D366',
+                            allowOutsideClick: false
+                        }).then(() => {
+                            const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
+                            window.open(urlWA, '_blank');
+                        });
+
+                    }).catch((err) => {
+                        Swal.close();
+                        Swal.fire({ title: 'Gagal mengunduh', text: err.toString(), icon: 'error' });
+                    });
+                }, 800);
+            });
+
+            // 🛑 AKSI 4: TUTUP FAKTUR
+            content.querySelector('#btn-tutup-faktur').addEventListener('click', () => {
+                Swal.close();
+            });
         }
     });
 }
