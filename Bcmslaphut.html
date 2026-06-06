@@ -53,13 +53,13 @@
             width: 100%;
         }
 
-        /* --- REVISI KOP: Logo Sejajar dengan Nama Perusahaan --- */
+        /* --- KOP SEJAJAR: LOGO DI KIRI, NAMA & ALAMAT DI KANAN --- */
         .invoice-kop-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
         }
 
         .kop-logo-wrapper {
@@ -67,31 +67,48 @@
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            padding: 10px 0; /* Padding untuk logo */
         }
 
         .kop-logo-wrapper img {
             max-width: 120px;
             height: auto;
         }
+
+        /* Memaksa semua komponen teks di kanan rata kanan penuh */
+        .kop-text-wrapper {
+            width: 73%;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 2px; 
+        }
+
+        .kop-text-wrapper h2 {
+            margin: 0 0 4px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: -0.5px;
+        }
+
+        .kop-text-wrapper p {
+            margin: 0;
+            font-size: 11px;
+            color: #4b5563;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+        
+        /* Garis hitam solid pembatas kop surat */
         .company-details-bar {
-            border-bottom: 2px solid #000; /* Garis hitam solid */
-            margin-top: 15px;
+            border-bottom: 2px solid #000;
+            margin-top: 12px;
             margin-bottom: 25px;
             width: 100%;
-            height: 0; /* Kosong tanpa teks internal */
+            height: 0;
         }
 
-        .company-details-bar p {
-            margin: 0;
-            font-size: 11.5px;
-            color: #4b5563;
-            line-height: 1.6;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        /* --- Urutan Judul Laporan & No Dokumen Tepat di Bawahnya --- */
+        /* --- REPORT TITLE SECTION --- */
         .report-title-section {
             text-align: center;
             margin-bottom: 25px;
@@ -110,13 +127,8 @@
             color: #0f172a;
             font-weight: 600;
         }
-        .report-title-section p.periode {
-            margin: 2px 0 0 0;
-            font-size: 11.5px;
-            color: #64748b;
-        }
 
-        /* --- Header Fokus Data Supplier --- */
+        /* --- Header Data Supplier --- */
         .supplier-header-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -335,24 +347,20 @@
     <div class="document-wrapper">
         <div class="printable-content" id="nota-rekap-container">
             
-            <!-- REVISI: KOP SEJAJAAR (LOGO DI KIRI, NAMA DI KANAN) -->
+            <!-- KOP SEJAJAR (LOGO DI KIRI, NAMA & ALAMAT MENYATU DI KANAN) -->
             <div class="invoice-kop-container">
                 <div class="kop-logo-wrapper">
                     <img src="logobcms.png" alt="Logo BCMS">
                 </div>
                 <div class="kop-text-wrapper">
                     <h2>BERKAH CRISTAL MANIS SEJAHTERA</h2>
+                    <p>Dusun blanakan rt/rw 003/002, Desa Wonodadi - Kec Buayan</p>
+                    <p>Kab KEBUMEN - Kode pos 54474</p>
+                    <p>Telp : 0813 3639 8800, 0812 33759743</p>
                 </div>
             </div>
 
-            <!-- Alamat Pabrik Kebumen Membentang di Bawahnya -->
-            <div class="company-details-bar">
-                <p>
-                    Dusun blanakan rt/rw 003/002, Desa Wonodadi - Kec Buayan<br>
-                    Kab KEBUMEN - Kode pos 54474<br>
-                    Telp : 0813 3639 8800, 0812 33759743
-                </p>
-            </div>
+            <!-- GARIS HORIZONTAL TEGAS PEMBATAS KOP SURAT -->
             <div class="company-details-bar"></div>
 
             <!-- JUDUL & NO DOKUMEN -->
@@ -381,11 +389,11 @@
             <!-- SUMMARY KONSOLIDASI + TERBILANG -->
             <div class="summary-box-grand">
                 <div class="smr-row">
-                    <span>Total Nilai Pembelian </span>
+                    <span>Total Nilai Pembelian Komoditas</span>
                     <span id="grand-bruto" class="text-right-nominal">Rp 0</span>
                 </div>
                 <div class="smr-row">
-                    <span>Total Pembayaran</span>
+                    <span>Total Potongan / Log Bayar Ter-record</span>
                     <span id="grand-bayar" class="text-right-nominal">- Rp 0</span>
                 </div>
                 <div class="smr-row grand-total">
@@ -413,7 +421,7 @@
 
             <!-- FOOTER KET KIRI & TGL CETAK KANAN -->
             <div class="document-footer-note">
-                <span>* Dokumen Digital Berkah Cristal Manis Sejahtera.</span>
+                <span>* Dokumen rekap otomatis dari sistem database internal BCMS.</span>
                 <span id="lbl-tgl-cetak">Tgl Cetak: --</span>
             </div>
 
@@ -456,7 +464,6 @@
             document.getElementById('lbl-supplier').innerText = ": " + sName;
             document.getElementById('lbl-alamat-telp').innerText = `: ${sAlamat} ${sTelp ? '('+sTelp+')' : ''}`;
             document.getElementById('lbl-doc-no').innerText = "No. Dokumen: " + docNoGenerated;
-            document.getElementById('periode-rekap').innerText = `Periode: ${p.get("dari") || '--'} s/d ${p.get("sampai") || '--'}`;
             document.getElementById('lbl-tgl-cetak').innerText = "Tgl Cetak: " + (p.get("tanggal") || new Date().toLocaleDateString('id-ID'));
             document.getElementById('name-admin-footer').innerText = p.get("admin") || "Admin Keuangan";
             document.getElementById('name-supplier-footer').innerText = sName;
@@ -529,9 +536,9 @@
                                 <thead>
                                     <tr>
                                         <th>Deskripsi Barang</th>
-                                        <th class="text-right">Qty</th>
+                                        <th class="text-right">Volume</th>
                                         <th class="text-right">Harga Satuan</th>
-                                        <th class="text-right">Sub Total</th>
+                                        <th class="text-right">Total Bruto</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -545,11 +552,11 @@
                             </table>
                             
                             <div class="total-pembelian-row">
-                                Total Pembelian ${noNota}: <span class="text-right-nominal">${formatRupiah(brtNota)}</span>
+                                Total Pembelian Bruto: <span class="text-right-nominal">${formatRupiah(brtNota)}</span>
                             </div>
 
                             <div class="payment-log-section">
-                                <div class="log-title">Riwayat Pembayaran ${noNota}</div>
+                                <div class="log-title">Riwayat Detail Log Pembayaran Nota:</div>
                                 <table class="log-table">
                                     <thead>
                                         <tr><th>Tanggal</th><th>Jenis Bayar</th><th>Keterangan</th><th class="text-right-nominal">Nominal</th></tr>
@@ -577,14 +584,14 @@
                 Swal.fire({
                     title: 'REKAP UTANG SIAP!',
                     html: `
-                        Dokumen atas nama <b>${sName}</b> berhasil dibuat.<br>Silakan tentukan tindakan:
+                        Dokumen atas nama <b>${sName}</b> berhasil dirakit.<br>Silakan tentukan tindakan bapak:
                         <br><br>
                         <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
                             <button id="btn-opsi-1" class="swal2-styled" style="background-color: #3b82f6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
                                 <i class="fa fa-print"></i> 1. Cetak Dokumen
                             </button>
                             <button id="btn-opsi-2" class="swal2-styled" style="background-color: #4b5563; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
-                                <i class="fa fa-share-alt"></i> 2. Bagikan via Browser
+                                <i class="fa fa-share-alt"></i> 2. Bagikan via Browser Bawaan
                             </button>
                             <button id="btn-opsi-3" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
                                 <i class="fa fa-image"></i> 3. Kirim Gambar (JPEG) ke WA
