@@ -207,8 +207,8 @@
 
                             tbodyBarangHtml += `<tr>
                                 <td>[${kode}] ${nama}</td>
-                                <td class="text-right-nominal">${qty}</td>
-                                <td class="text-right-nominal">${formatRupiah(harga)}</td>
+                                <td class="text-left-nominal">${qty}</td>
+                                <td class="text-left-nominal">${formatRupiah(harga)}</td>
                                 <td class="text-right-nominal">${formatRupiah(total)}</td>
                             </tr>`;
                         }
@@ -247,7 +247,7 @@
                         <div class="nota-item-card">
                             <div class="card-head"><span>[${idx+1}] NOTA PEMBELIAN: ${noNota}</span><span>Tgl: ${tglNota}</span></div>
                             <table class="item-table">
-                                <thead><tr><th>Deskripsi</th><th class="text-center">Qty</th><th class="text-center">Harga</th><th class="text-center">Sub Total</th></tr></thead>
+                                <thead><tr><th>Deskripsi</th><th class="text-left">Qty</th><th class="text-left">Harga</th><th class="text-right">Sub Total</th></tr></thead>
                                 <tbody>${tbodyBarangHtml}</tbody>
                             </table>
                             <div class="total-pembelian-row">Total Pembelian Nota: <span class="text-right-nominal">${formatRupiah(totalBeli)}</span></div>
