@@ -117,8 +117,8 @@
             <div id="dynamic-nota-list"></div>
 
             <div class="summary-box-grand">
-                <div class="smr-row"><span>Total Nilai Pembelian Komoditas</span><span id="grand-bruto" class="text-right-nominal">Rp 0</span></div>
-                <div class="smr-row"><span>Total Potongan Ter-record</span><span id="grand-bayar" class="text-right-nominal">- Rp 0</span></div>
+                <div class="smr-row"><span>Total Nilai Pembelian</span><span id="grand-bruto" class="text-right-nominal">Rp 0</span></div>
+                <div class="smr-row"><span>Total Pembayaran</span><span id="grand-bayar" class="text-right-nominal">- Rp 0</span></div>
                 <div class="smr-row grand-total"><span>GRAND TOTAL SISA HUTANG PABRIK</span><span id="grand-netto" class="text-right-nominal">Rp 0</span></div>
                 <div class="spelled-out-box" id="lbl-terbilang">Terbilang: * Menghitung nominal... *</div>
             </div>
@@ -247,12 +247,12 @@
                         <div class="nota-item-card">
                             <div class="card-head"><span>[${idx+1}] NOTA PEMBELIAN: ${noNota}</span><span>Tgl: ${tglNota}</span></div>
                             <table class="item-table">
-                                <thead><tr><th>Deskripsi Rincian Komoditas</th><th class="text-right">Volume</th><th class="text-right">Harga</th><th class="text-right">Total Bruto</th></tr></thead>
+                                <thead><tr><th>Deskripsi</th><th class="text-center">Qty</th><th class="text-center">Harga</th><th class="text-center">Sub Total</th></tr></thead>
                                 <tbody>${tbodyBarangHtml}</tbody>
                             </table>
                             <div class="total-pembelian-row">Total Pembelian Nota: <span class="text-right-nominal">${formatRupiah(totalBeli)}</span></div>
                             <div class="payment-log-section">
-                                <div class="log-title">Riwayat Detail Angsuran Pembayaran:</div>
+                                <div class="log-title">Riwayat Pembayaran:</div>
                                 <table class="log-table">
                                     <thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan</th><th class="text-right-nominal">Nominal</th></tr></thead>
                                     <tbody>${tbodyBayarHtml}</tbody>
@@ -272,8 +272,8 @@
 
             setTimeout(() => {
                 Swal.fire({
-                    title: 'REKAP UTANG SIAP!',
-                    html: `Dokumen atas nama <b>${sName}</b> berhasil dirakit.<br>Silakan tentukan tindakan bapak:<br><br><div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;"><button id="btn-opsi-1" class="swal2-styled" style="background-color: #3b82f6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-print"></i> 1. Cetak Dokumen</button><button id="btn-opsi-2" class="swal2-styled" style="background-color: #4b5563; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-share-alt"></i> 2. Bagikan via Browser Bawaan</button><button id="btn-opsi-3" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-image"></i> 3. Kirim Gambar (JPEG) ke WA</button><button id="btn-opsi-4" class="swal2-styled" style="background-color: #8b5cf6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-file-pdf"></i> 4. Kirim File PDF ke WA</button><button id="btn-opsi-5" class="swal2-styled" style="background-color: transparent; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #ef4444; border: 1px solid #ef4444; font-weight: bold; cursor: pointer;">5. Close</button></div>`,
+                    title: 'DOCUMENT SIAP !',
+                    html: `Dokumen atas nama <b>${sName}</b> berhasil dibuat<br>Silakan tentukan tindakan berikutnya:<br><br><div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;"><button id="btn-opsi-1" class="swal2-styled" style="background-color: #3b82f6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-print"></i> 1. Cetak Dokumen</button><button id="btn-opsi-2" class="swal2-styled" style="background-color: #4b5563; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-share-alt"></i> 2. Bagikan via Browser Bawaan</button><button id="btn-opsi-3" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-image"></i> 3. Kirim Gambar (JPEG) ke WA</button><button id="btn-opsi-4" class="swal2-styled" style="background-color: #8b5cf6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;"><i class="fa fa-file-pdf"></i> 4. Kirim File PDF ke WA</button><button id="btn-opsi-5" class="swal2-styled" style="background-color: transparent; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #ef4444; border: 1px solid #ef4444; font-weight: bold; cursor: pointer;">5. Close</button></div>`,
                     icon: 'success', showConfirmButton: false, allowOutsideClick: false,
                     didOpen: () => {
                         const content = Swal.getHtmlContainer();
