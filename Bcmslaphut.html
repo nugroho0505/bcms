@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Cetak & Rekap Konsolidasi - NDTECH Ecosystem</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -285,16 +287,67 @@
             }, 600);
         });
 
+                // GANTI fungsi ini di bagian paling bawah tag <script>
         function pemicuUploadCloud(formatType) {
-            Swal.fire({ title: 'Sinkronisasi Cloud...', text: 'Sedang memproses dokumen digital, mohon tunggu.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            html2canvas(document.getElementById('nota-rekap-container'), { scale: 2, useCORS: true, logging: false, width: 800 }).then(canvas => {
-                const base64Img = canvas.toDataURL('image/jpeg', 0.95);
-                const packet = { format: formatType, nama_file: `REKAP_${(p.get("customer") || "SUPPLIER").replace(/\s+/g, '_')}_${docNoGenerated}`, supplier: p.get("customer") || "SUPPLIER", no_dokumen: docNoGenerated };
-                if (typeof google !== 'undefined' && google.script) {
-                    google.script.run.withSuccessHandler(function(urlWA) { Swal.close(); window.open(urlWA, '_blank'); }).withFailureHandler(function(err) { Swal.fire({ title: 'Gagal', text: err.toString(), icon: 'error' }); }).prosesBoronganSimpanCloud(base64Img, packet);
-                } else { setTimeout(() => { Swal.close(); Swal.fire({ title: '[SIMULASI BERHASIL]', text: `File ${formatType} sukses diredirect ke Drive!`, icon: 'info' }); }, 1500); }
+            Swal.fire({
+                title: 'Mengunduh ' + formatType + '...',
+                text: 'File akan disimpan ke HP, lalu WhatsApp akan terbuka otomatis.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
             });
+
+            const elementDoc = document.getElementById('nota-rekap-container');
+            const sName = p.get("customer") || "SUPPLIER";
+            const namaFile = `REKAP_${sName.replace(/\s+/g, '_')}_${docNoGenerated}`;
+            const grandParam = Number(p.get("grand")) || 0;
+
+            // Merakit Teks Pesan WhatsApp Otomatis
+            let teksWA = `*REKAP UTANG DAGANG - BCMS*\n`;
+            teksWA += `----------------------------------------\n`;
+            teksWA += `No Dokumen : ${docNoGenerated}\n`;
+            teksWA += `Supplier   : ${sName}\n`;
+            teksWA += `Sisa Utang : Rp ${grandParam.toLocaleString("id-ID")}\n`;
+            teksWA += `----------------------------------------\n`;
+            teksWA += `Silakan periksa lampiran file ${formatType} yang saya kirimkan.`;
+            
+            const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
+
+            if (formatType === "JPEG") {
+                // PROSES: Unduh Gambar (JPEG) -> Buka WhatsApp
+                html2canvas(elementDoc, { scale: 2, useCORS: true, logging: false, width: 800 }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = namaFile + '.jpeg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.95);
+                    link.click(); // Memicu download otomatis
+                    
+                    setTimeout(() => {
+                        Swal.close();
+                        window.open(urlWA, '_blank');
+                    }, 800);
+                });
+            } 
+            else if (formatType === "PDF") {
+                // PROSES: Unduh PDF -> Buka WhatsApp
+                const opsiSetting = {
+                    margin:       [8, 8, 8, 8],
+                    filename:     namaFile + '.pdf',
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, logging: false, width: 800 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().set(opsiSetting).from(elementDoc).save().then(() => {
+                    setTimeout(() => {
+                        Swal.close();
+                        window.open(urlWA, '_blank');
+                    }, 800);
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('Error', err.toString(), 'error');
+                });
+            }
         }
+
     </script>
 </body>
 </html>
