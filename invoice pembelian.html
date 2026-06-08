@@ -291,7 +291,7 @@ function updateStatusKeterangan(sisaTagihan, sisaDeposit) {
     if (sisaDeposit > 0) {
         statusTitle = "LUNAS (Sisa Deposit)";
         statusColor = "#16a34a"; // Hijau
-        deskripsi = `Transaksi telah dibayar penuh. Terdapat sisa saldo deposit Bapak/Ibu yang masih mengendap di supplier sebesar <b>Rp ${sisaDeposit.toLocaleString("id-ID")}</b>.`;
+        deskripsi = `Transaksi telah dibayar penuh. Terdapat sisa saldo deposit Pabrik yang masih ada di supplier sebesar <b>Rp ${sisaDeposit.toLocaleString("id-ID")}</b>.`;
     } 
     else if (sisaTagihan > 0) {
         statusTitle = "BELUM LUNAS";
