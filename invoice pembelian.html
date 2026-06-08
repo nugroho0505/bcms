@@ -39,13 +39,8 @@ body{
     box-sizing: border-box;
 }
 
-/* LOGO */
-.logo{
-    width:60px;
-    height:60px;
-}
+.logo{ width:60px; height:60px; }
 
-/* FAKTUR BOX */
 .faktur-box{
     border:2px solid #000;
     width:49%;
@@ -90,36 +85,37 @@ th, td{ padding:4px; }
     margin-top:5px;
 }
 
-.footer-container {
+/* 🎯 LAYOUT BARU: FLEX STRETCH AGAR TINGGI SAMA */
+.layout-tengah {
     display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
+    align-items: stretch;
     gap: 5px;
+    margin-top: 5px;
 }
 
-.footer-left-rekening {
-    width: 60%;
+.box-keterangan {
+    flex: 1; /* Mengisi sisa ruang kosong di kiri */
     border: 1px solid #000;
-    padding: 8px;
+    padding: 10px;
     box-sizing: border-box;
 }
 
-.footer-right-summary {
-    width: 38%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.box-summary {
+    width: 40%; /* Lebar tetap untuk kolom summary */
 }
 
-.summary-table, .riwayat-table {
+/* Memaksa tabel summary tingginya sama dengan flex container */
+.box-summary table {
+    height: 100%; 
+    margin-top: 0;
+}
+
+/* 🎯 RIWAYAT FULL WIDTH */
+.box-riwayat {
     width: 100%;
-    border-collapse: collapse;
+    margin-top: 10px;
 }
-
-.riwayat-table th {
-    background: #f5f5f5;
-    font-weight: bold;
-}
+.riwayat-table th { background: #f5f5f5; font-weight: bold; }
 
 .sub-terbilang {
     font-size: 11px;
@@ -136,7 +132,6 @@ th, td{ padding:4px; }
     box-sizing: border-box;
 }
 
-/* 🎨 TAMBAHAN CSS BADGE JENIS PEMBAYARAN */
 .badge {
     padding: 3px 6px;
     border-radius: 4px;
@@ -146,15 +141,12 @@ th, td{ padding:4px; }
     display: inline-block;
     text-align: center;
 }
-.badge-deposit  { background-color: #8b5cf6; } /* Ungu */
-.badge-cash     { background-color: #10b981; } /* Hijau */
-.badge-transfer { background-color: #3b82f6; } /* Biru */
-.badge-default  { background-color: #6b7280; } /* Abu-abu */
-
+.badge-deposit  { background-color: #8b5cf6; } 
+.badge-cash     { background-color: #10b981; } 
+.badge-transfer { background-color: #3b82f6; } 
+.badge-default  { background-color: #6b7280; } 
 
 @media print{
-    .print-btn{ display:none; }
-    /* WAJIB agar warna background badge & status terbawa saat cetak PDF */
     body{ margin:0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
     .container { border: none; max-width: 100%; }
 }
@@ -168,7 +160,7 @@ th, td{ padding:4px; }
 <div class="flex">
     <div class="header-left">
         <div style="display:flex; align-items:center; gap:12px;">
-            <img class="logo" src="logobcms.png">
+            <img class="logo" src="logobcms.png" onerror="this.style.display='none'">
             <div style="font-size:20px; font-weight:bold; letter-spacing:1px;">
                 BERKAH CRISTAL MANIS SEJAHTERA
             </div>
@@ -178,7 +170,7 @@ th, td{ padding:4px; }
             Desa Wonodadi - Kec Buayan <br>
             Kab KEBUMEN  - Kode pos 54474<br>
             Telp : 0813 3639 8800, 0812 33759743<br>
-            Email : @gmail.com<br>
+            Email : admin@gmail.com<br>
         </div>
         <br>
         <div style="font-size:14px; font-weight:bold; letter-spacing:1px;">
@@ -218,44 +210,46 @@ th, td{ padding:4px; }
 
 <div id="terbilang">Terbilang : -</div>
 
-<div class="footer-container">
+<!-- 🎯 LAYOUT TENGAH: TINGGI OTOMATIS SEJAJAR -->
+<div class="layout-tengah">
     
-    <div class="footer-left-rekening" id="keterangan-box">
-        Keterangan :<br><br>
-        BRI 6691 0101 5718 506 a/n Yohanes purwanto
+    <div class="box-keterangan" id="keterangan-box">
+        <!-- Konten Keterangan Dinamis akan diinject lewat JS -->
     </div>
 
-    <div class="footer-right-summary">
-        <table class="summary-table">
+    <div class="box-summary">
+        <table>
             <tr><td>Sub Total</td><td class="right" id="subtotal"></td></tr>
             <tr><td>Diskon</td><td class="right">0</td></tr>
             <tr><td>PPN</td><td class="right">0</td></tr>
             <tr><td>Biaya</td><td class="right">0</td></tr>
             <tr><td><b>Total</b></td><td class="right"><b id="grandTotal"></b></td></tr>
         </table>
-
-        <div id="section-riwayat" style="display:none; margin-top:5px;">
-            <div style="font-weight:bold; text-decoration:underline; margin-bottom:3px;">Riwayat Pembayaran:</div>
-            <table class="riwayat-table">
-                <thead>
-                    <tr>
-                        <th>Tgl Bayar</th>
-                        <th>Jenis</th>
-                        <th style="text-align:right;">Bayar</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-riwayat"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" style="text-align:right; font-weight:bold;">Sisa:</td>
-                        <td class="right" style="font-weight:bold;" id="sisa-bayar"></td>
-                    </tr>
-                </tfoot>
-            </table>
-            <div id="terbilang-sisa" class="sub-terbilang"></div>
-        </div>
     </div>
 
+</div>
+
+<!-- 🎯 LAYOUT BAWAH: RIWAYAT FULL WIDTH -->
+<div class="box-riwayat" id="section-riwayat" style="display:none;">
+    <div style="font-weight:bold; text-decoration:underline; margin-bottom:3px;">Riwayat Pembayaran:</div>
+    <table class="riwayat-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Tgl Bayar</th>
+                <th style="width: 15%;">Jenis</th>
+                <th style="width: 50%;">Keterangan</th>
+                <th style="width: 20%; text-align:right;">Nominal</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-riwayat"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" style="text-align:right; font-weight:bold;">Sisa Tagihan:</td>
+                <td class="right" style="font-weight:bold; color:red;" id="sisa-bayar"></td>
+            </tr>
+        </tfoot>
+    </table>
+    <div id="terbilang-sisa" class="sub-terbilang" style="text-align: right;"></div>
 </div>
 
 <div class="flex" style="margin-top:10px;">
@@ -288,42 +282,36 @@ function terbilang(nilai) {
     return penyebut(nilai).replace(/\s+/g, ' ').trim();
 }
 
-// 🎯 FUNGSI UPDATE KETERANGAN BERDASARKAN SISA HITUNGAN
+// 🎯 FUNGSI UPDATE KETERANGAN MURNI DINAMIS (Tanpa Rekening Statis)
 function updateStatusKeterangan(sisaTagihan, sisaDeposit) {
-    let statusText = "";
+    let statusTitle = "";
     let statusColor = "";
-    let ekstraTeks = "";
-    const infoRekening = "Info Rekening:<br><b>BRI 6691 0101 5718 506</b><br>a/n Yohanes purwanto";
+    let deskripsi = "";
 
-    // ATURAN UTAMA: Jika parameter sisa deposit > 0, otomatis LUNAS
     if (sisaDeposit > 0) {
-        statusText = "LUNAS (Ada Sisa Deposit)";
+        statusTitle = "LUNAS (Sisa Deposit)";
         statusColor = "#16a34a"; // Hijau
-        ekstraTeks = `
-            <div style="margin-top:6px; padding:5px; background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:4px; font-size:11px;">
-                *Terdapat sisa saldo deposit mengendap sebesar:<br>
-                <b>Rp ${sisaDeposit.toLocaleString("id-ID")}</b>
-            </div>`;
+        deskripsi = `Transaksi telah dibayar penuh. Terdapat sisa saldo deposit Bapak/Ibu yang masih mengendap di supplier sebesar <b>Rp ${sisaDeposit.toLocaleString("id-ID")}</b>.`;
     } 
-    // Jika tidak ada sisa deposit, cek apakah tagihan masih bersisa
     else if (sisaTagihan > 0) {
-        statusText = "BELUM LUNAS";
+        statusTitle = "BELUM LUNAS";
         statusColor = "#dc2626"; // Merah
+        deskripsi = `Terdapat sisa tagihan berjalan sebesar <b>Rp ${sisaTagihan.toLocaleString("id-ID")}</b> yang belum terbayarkan.`;
     } 
-    // Jika sisa deposit 0 dan sisa tagihan 0 (Bayar Pas)
     else {
-        statusText = "LUNAS";
+        statusTitle = "LUNAS";
         statusColor = "#16a34a"; // Hijau
+        deskripsi = `Transaksi ini telah diselesaikan dan dibayar penuh.`;
     }
 
     document.getElementById("keterangan-box").innerHTML = `
-        <div style="font-size:15px; font-weight:900; color:${statusColor}; border-bottom:2px solid ${statusColor}; padding-bottom:5px; margin-bottom:8px;">
-            STATUS: ${statusText}
+        <div style="font-size:16px; font-weight:900; color:${statusColor}; border-bottom:2px solid ${statusColor}; padding-bottom:5px; margin-bottom:8px;">
+            STATUS: ${statusTitle}
         </div>
-        <div style="font-size:11px; line-height:1.4;">${infoRekening}</div>
-        ${ekstraTeks}
+        <div style="font-size:12px; line-height:1.5;">${deskripsi}</div>
     `;
 }
+
 function renderTable() {
     let detail = p.get("detail") || "";
     let grandTotal = Number(p.get("grand")) || 0;
@@ -358,15 +346,11 @@ function renderTable() {
     document.getElementById("terbilang").innerText = "Terbilang : " + terbilang(grandTotal) + " rupiah";
 
     let topValue = (p.get("top") || "-").trim().toLowerCase();
-    
-    // Panggil logika riwayat & Keterangan
     renderRiwayat(grandTotal, topValue);
 }
 
 function renderRiwayat(grandTotal, topValue) {
     let bayarParam = p.get("bayar") || "";
-    
-    // 🎯 TANGKAP PARAMETER SISA DEPOSIT (Contoh di URL: &sisa_deposit=150000)
     let sisaDepositParam = Number(p.get("sisa_deposit")) || 0;
     
     if (!bayarParam) {
@@ -375,7 +359,7 @@ function renderRiwayat(grandTotal, topValue) {
             updateStatusKeterangan(0, sisaDepositParam); 
         } else {
             document.getElementById("section-riwayat").style.display = "block";
-            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran</td></tr>`;
+            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="4" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran tercatat</td></tr>`;
             document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
             document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
             updateStatusKeterangan(grandTotal, sisaDepositParam); 
@@ -390,9 +374,12 @@ function renderRiwayat(grandTotal, topValue) {
     listBayar.forEach(row => {
         if(!row) return;
         let col = row.split("|");
+        
+        // 🎯 TANGKAP 4 PARAMETER SESUAI REVISI
         let tglBayar   = col[0] || "-";
         let jenisBayar = col[1] || "-";
-        let jumlah     = Number(col[2]) || 0;
+        let ketBayar   = col[2] || "-"; // Kolom Baru Keterangan
+        let jumlah     = Number(col[3]) || 0; // Bergeser ke index 3
 
         totalMasuk += jumlah;
 
@@ -406,16 +393,15 @@ function renderRiwayat(grandTotal, topValue) {
         <tr>
             <td>${tglBayar}</td>
             <td><span class="badge ${badgeClass}">${jenisBayar}</span></td>
+            <td>${ketBayar}</td>
             <td class="right">${jumlah.toLocaleString("id-ID")}</td>
         </tr>
         `;
     });
 
-    // Hitung sisa tagihan aktual untuk tabel
     let sisaSebenarnya = grandTotal - totalMasuk;
     let sisaTampil = sisaSebenarnya < 0 ? 0 : sisaSebenarnya;
 
-    // Paksa sisa tabel jadi 0 jika ada parameter sisa deposit (Sesuai aturan: Deposit ada = Pasti Lunas)
     if (sisaDepositParam > 0) {
         sisaTampil = 0;
     }
@@ -425,10 +411,9 @@ function renderRiwayat(grandTotal, topValue) {
     document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaTampil) + " rupiah";
     document.getElementById("section-riwayat").style.display = "block";
 
-    // 🎯 PANGGIL FUNGSI KETERANGAN DENGAN 2 VARIABEL: Sisa Tagihan & Parameter Sisa Deposit
     updateStatusKeterangan(sisaTampil, sisaDepositParam);
 }
-    
+
 function setHeader(){
     document.getElementById("customer").innerText = p.get("customer") || "-";
     document.getElementById("alamat").innerText = p.get("alamat") || "-";
@@ -448,23 +433,14 @@ window.onload = function(){
     const grandTotal = Number(p.get("grand")) || 0;
 
     Swal.fire({
-        title: 'FAKTUR PENJUALAN SIAP!',
+        title: 'FAKTUR PEMBELIAN',
         html: `
-            Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan pilih tindakan bapak:
+            Tinjau faktur <b>${noFaktur}</b> sebelum dicetak.
             <br><br>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
                 <button id="btn-cetak" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px;">
-                    <i class="fa fa-print"></i> Cetak Faktur
+                    <i class="fa fa-print"></i> Cetak Dokumen
                 </button>
-                
-                <button id="btn-share-laci" class="swal2-styled" style="background-color: #3b82f6; width: 85%; margin: 0; padding: 10px;">
-                    <i class="fa fa-share-alt"></i> Bagikan PDF (Laci HP)
-                </button>
-                
-                <button id="btn-simpan-teks" class="swal2-styled" style="background-color: #eab308; width: 85%; margin: 0; padding: 10px;">
-                    <i class="fa fa-save"></i> Simpan PDF & Kirim Teks
-                </button>
-                
                 <button id="btn-tutup-faktur" class="swal2-styled" style="background-color: #6b7280; width: 85%; margin: 0; padding: 10px;">
                     Tutup
                 </button>
@@ -475,88 +451,10 @@ window.onload = function(){
         allowOutsideClick: false,
         didOpen: () => {
             const content = Swal.getHtmlContainer();
-            
-            const elemenFaktur = document.getElementById('faktur-area');
-            const namaFilePdf = `Faktur_Penjualan_${noFaktur}.pdf`;
-            const opsiSetting = {
-                margin:       [8, 8, 8, 8],
-                filename:     namaFilePdf,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false, width: 800 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
             content.querySelector('#btn-cetak').addEventListener('click', () => {
                 Swal.close();
                 window.print();
             });
-
-            content.querySelector('#btn-share-laci').addEventListener('click', () => {
-                Swal.fire({
-                    title: 'Menyiapkan PDF...',
-                    text: 'Sedang memproses berkas, mohon tunggu.',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                setTimeout(() => {
-                    html2pdf().set(opsiSetting).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
-                        if (!pdfBlob || pdfBlob.size === 0) { throw new Error("Gagal merender data."); }
-                        const filePdfSiapKirim = new File([pdfBlob], namaFilePdf, { type: 'application/pdf' });
-
-                        if (navigator.canShare && navigator.canShare({ files: [filePdfSiapKirim] })) {
-                            Swal.close();
-                            navigator.share({
-                                files: [filePdfSiapKirim],
-                                title: 'Kirim Dokumen Faktur Penjualan',
-                                text: `Berikut terlampir file PDF Faktur No. ${noFaktur}`
-                            }).catch((err) => { console.log('Batal share:', err); });
-                        } else {
-                            Swal.close();
-                            html2pdf().set(opsiSetting).from(elemenFaktur).save();
-                        }
-                    }).catch((err) => {
-                        Swal.close();
-                        console.error(err);
-                    });
-                }, 800);
-            });
-
-            content.querySelector('#btn-simpan-teks').addEventListener('click', () => {
-                Swal.fire({
-                    title: 'Mengunduh PDF...',
-                    text: 'Faktur otomatis disimpan.',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                setTimeout(() => {
-                    html2pdf().set(opsiSetting).from(elemenFaktur).save().then(() => {
-                        let teksWA = `*FAKTUR PENJUALAN - BCMS*\n`;
-                        teksWA += `----------------------------------------\n`;
-                        teksWA += `No Faktur : ${noFaktur}\n`;
-                        teksWA += `Total     : Rp ${grandTotal.toLocaleString("id-ID")}\n`;
-                        teksWA += `----------------------------------------\n`;
-                        
-                        Swal.fire({
-                            title: 'PDF BERHASIL DISIMPAN!',
-                            text: 'File PDF sudah di Download. Klik tombol di bawah untuk membuka WhatsApp, lalu tempel/lampirkan file PDF secara manual ',
-                            icon: 'success',
-                            confirmButtonText: '<i class="fab fa-whatsapp"></i> Lanjut ke WhatsApp',
-                            confirmButtonColor: '#25D366',
-                            allowOutsideClick: false
-                        }).then(() => {
-                            const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
-                            window.open(urlWA, '_blank');
-                        });
-
-                    }).catch((err) => {
-                        Swal.close();
-                        Swal.fire({ title: 'Gagal mengunduh', text: err.toString(), icon: 'error' });
-                    });
-                }, 800);
-            });
-
             content.querySelector('#btn-tutup-faktur').addEventListener('click', () => {
                 Swal.close();
             });
