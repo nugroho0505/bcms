@@ -456,7 +456,15 @@ window.onload = function(){
     teksWA += `----------------------------------------\n`;
     teksWA += `Total Bayar     : Rp ${totalBayar.toLocaleString("id-ID")}\n`;
     teksWA += `----------------------------------------\n`;
-    teksWA += `Status          : *${statusDinamis}*`;
+    
+    // Cek kondisi untuk memunculkan nominal sisa deposit atau sisa tagihan
+    if (sisaDepositParam > 0) {
+        teksWA += `Status          : *${statusDinamis}* (Sisa Deposit: Rp ${sisaDepositParam.toLocaleString("id-ID")})`;
+    } else if (sisaTagihan > 0) {
+        teksWA += `Status          : *${statusDinamis}* (Kurang: Rp ${sisaTagihan.toLocaleString("id-ID")})`;
+    } else {
+        teksWA += `Status          : *${statusDinamis}*`;
+    }
     
     const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
     Swal.fire({
