@@ -5,6 +5,8 @@
 <title>Faktur Pembelian</title>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -431,19 +433,43 @@ window.onload = function(){
 
     const noFaktur = p.get("no") || "Tanpa_Nomor";
     const grandTotal = Number(p.get("grand")) || 0;
+    
+    // Hitung ulang Total Bayar dan Status untuk Template WA
+    let bayarParam = p.get("bayar") || "";
+    let sisaDepositParam = Number(p.get("sisa_deposit")) || 0;
+    let totalBayar = 0;
+    if (bayarParam) {
+        bayarParam.split(",").forEach(row => {
+            if (row) totalBayar += (Number(row.split("|")[3]) || 0); // Ambil index [3] sesuai parameter baru
+        });
+    }
+    
+    let sisaTagihan = grandTotal - totalBayar;
+    let statusDinamis = "LUNAS";
+    if (sisaDepositParam > 0) statusDinamis = "LUNAS (Sisa Deposit)";
+    else if (sisaTagihan > 0) statusDinamis = "BELUM LUNAS";
 
+    // Template Teks WhatsApp
+    let teksWA = `*FAKTUR PEMBELIAN - BCMS*\n`;
+    teksWA += `No PO           : ${noFaktur}\n`;
+    teksWA += `Total Pembelian : Rp ${grandTotal.toLocaleString("id-ID")}\n`;
+    teksWA += `----------------------------------------\n`;
+    teksWA += `Total Bayar     : Rp ${totalBayar.toLocaleString("id-ID")}\n`;
+    teksWA += `----------------------------------------\n`;
+    teksWA += `Status          : *${statusDinamis}*`;
+    
+    const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
     Swal.fire({
         title: 'FAKTUR PEMBELIAN',
         html: `
             Tinjau faktur <b>${noFaktur}</b> sebelum dicetak.
             <br><br>
-            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
-                <button id="btn-cetak" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px;">
-                    <i class="fa fa-print"></i> Cetak Dokumen
-                </button>
-                <button id="btn-tutup-faktur" class="swal2-styled" style="background-color: #6b7280; width: 85%; margin: 0; padding: 10px;">
-                    Tutup
-                </button>
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; align-items: center;">
+                <button id="btn-cetak" class="swal2-styled" style="background-color: #6b7280; width: 90%; margin: 0; padding: 8px;"><i class="fa fa-print"></i> 1. Cetak Dokumen</button>
+                <button id="btn-bagikan" class="swal2-styled" style="background-color: #3b82f6; width: 90%; margin: 0; padding: 8px;"><i class="fa fa-share-alt"></i> 2. Bagikan PDF</button>
+                <button id="btn-pdf-wa" class="swal2-styled" style="background-color: #10b981; width: 90%; margin: 0; padding: 8px;"><i class="fa fa-file-pdf"></i> 3. Simpan PDF & Buka WA</button>
+                <button id="btn-jpeg-wa" class="swal2-styled" style="background-color: #eab308; width: 90%; margin: 0; padding: 8px;"><i class="fa fa-image"></i> 4. Simpan JPEG & Buka WA</button>
+                <button id="btn-tutup" class="swal2-styled" style="background-color: #ef4444; width: 90%; margin: 0; padding: 8px;">5. Tutup</button>
             </div>
         `,
         icon: 'info',
@@ -451,13 +477,50 @@ window.onload = function(){
         allowOutsideClick: false,
         didOpen: () => {
             const content = Swal.getHtmlContainer();
-            content.querySelector('#btn-cetak').addEventListener('click', () => {
-                Swal.close();
-                window.print();
+            const elemenFaktur = document.getElementById('faktur-area');
+            const opsiPdf = { margin: [8,8,8,8], filename: `Faktur_${noFaktur}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, width: 800 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+
+            // 1. CETAK
+            content.querySelector('#btn-cetak').addEventListener('click', () => { Swal.close(); window.print(); });
+
+            // 2. BAGIKAN PDF
+            content.querySelector('#btn-bagikan').addEventListener('click', () => {
+                Swal.fire({ title: 'Menyiapkan PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                html2pdf().set(opsiPdf).from(elemenFaktur).outputPdf('blob').then((pdfBlob) => {
+                    const filePdf = new File([pdfBlob], `Faktur_${noFaktur}.pdf`, { type: 'application/pdf' });
+                    if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
+                        Swal.close();
+                        navigator.share({ files: [filePdf], title: 'Kirim Faktur' });
+                    } else {
+                        Swal.fire('Gagal', 'Perangkat tidak mendukung Share otomatis', 'error');
+                    }
+                });
             });
-            content.querySelector('#btn-tutup-faktur').addEventListener('click', () => {
-                Swal.close();
+
+            // 3. SIMPAN PDF & BUKA WA
+            content.querySelector('#btn-pdf-wa').addEventListener('click', () => {
+                Swal.fire({ title: 'Menyimpan PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                html2pdf().set(opsiPdf).from(elemenFaktur).save().then(() => {
+                    Swal.close();
+                    window.open(urlWA, '_blank');
+                });
             });
+
+            // 4. SIMPAN JPEG & BUKA WA
+            content.querySelector('#btn-jpeg-wa').addEventListener('click', () => {
+                Swal.fire({ title: 'Menyimpan JPEG...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                html2canvas(elemenFaktur, { scale: 2, useCORS: true, width: 800 }).then(canvas => {
+                    let link = document.createElement('a');
+                    link.download = `Faktur_${noFaktur}.jpg`;
+                    link.href = canvas.toDataURL('image/jpeg', 0.9);
+                    link.click();
+                    Swal.close();
+                    window.open(urlWA, '_blank');
+                });
+            });
+
+            // 5. TUTUP
+            content.querySelector('#btn-tutup').addEventListener('click', () => { Swal.close(); });
         }
     });
 }
