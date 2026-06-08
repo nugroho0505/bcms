@@ -13,10 +13,9 @@ body{
     font-family: monospace;
     margin:10px;
     font-size:12px;
-    background: #f3f4f6; /* Latar belakang layar agar kontainer struk terlihat kontras */
+    background: #f3f4f6; 
 }
 
-/* 🎯 REVISI LEBAR: Menggunakan max-width agar responsif di HP & pas di kertas A4 */
 .container{
     max-width: 800px;
     width: 100%;
@@ -81,11 +80,8 @@ table{
 }
 
 table, th, td{ border:1px solid #000; }
-
 th{ background:#eee; }
-
 th, td{ padding:4px; }
-
 .right{ text-align:right; }
 
 #terbilang{
@@ -94,7 +90,6 @@ th, td{ padding:4px; }
     margin-top:5px;
 }
 
-/* KOREKSI LAYOUT FOOTER */
 .footer-container {
     display: flex;
     justify-content: space-between;
@@ -141,17 +136,26 @@ th, td{ padding:4px; }
     box-sizing: border-box;
 }
 
-.print-btn{ 
-    margin-bottom:10px; 
-    padding: 6px 12px;
-    background: #fff;
-    border: 1px solid #000;
-    cursor: pointer;
+/* 🎨 TAMBAHAN CSS BADGE JENIS PEMBAYARAN */
+.badge {
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    display: inline-block;
+    text-align: center;
 }
+.badge-deposit  { background-color: #8b5cf6; } /* Ungu */
+.badge-cash     { background-color: #10b981; } /* Hijau */
+.badge-transfer { background-color: #3b82f6; } /* Biru */
+.badge-default  { background-color: #6b7280; } /* Abu-abu */
+
 
 @media print{
     .print-btn{ display:none; }
-    body{ margin:0; background: #fff; }
+    /* WAJIB agar warna background badge & status terbawa saat cetak PDF */
+    body{ margin:0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
     .container { border: none; max-width: 100%; }
 }
 </style>
@@ -159,11 +163,9 @@ th, td{ padding:4px; }
 
 <body>
 
-
 <div class="container" id="faktur-area">
 
 <div class="flex">
-
     <div class="header-left">
         <div style="display:flex; align-items:center; gap:12px;">
             <img class="logo" src="logobcms.png">
@@ -171,7 +173,6 @@ th, td{ padding:4px; }
                 BERKAH CRISTAL MANIS SEJAHTERA
             </div>
         </div>
-
         <div style="margin-top:6px; font-size: 11px;">
             Dusun blanakan rt/rw 003/002  <br>
             Desa Wonodadi - Kec Buayan <br>
@@ -179,9 +180,7 @@ th, td{ padding:4px; }
             Telp : 0813 3639 8800, 0812 33759743<br>
             Email : @gmail.com<br>
         </div>
-
         <br>
-
         <div style="font-size:14px; font-weight:bold; letter-spacing:1px;">
             Kepada Yth :
         </div>
@@ -192,22 +191,17 @@ th, td{ padding:4px; }
 
     <div class="faktur-box">
         <div class="title">FAKTUR PEMBELIAN</div>
-
         <div class="grid">
            <div>Tanggal<br><b id="tanggal"></b></div>
             <div>Nomor<br><b id="no"></b></div>
-
             <div>TOP<br><b id="top"></b></div>
             <div>Jatuh Tempo<br><b id="jatuhTempo"></b></div>
-
             <div>Ekspedisi<br><b id="xpdc"></b></div>
             <div>Tanggal Pengiriman<br><b id="tglKirim"></b></div>
-
             <div>PO No<br><b>-</b></div>
             <div>Mata Uang<br><b>Indonesian Rupiah</b></div>
         </div>
     </div>
-
 </div>
 
 <table>
@@ -226,7 +220,7 @@ th, td{ padding:4px; }
 
 <div class="footer-container">
     
-    <div class="footer-left-rekening">
+    <div class="footer-left-rekening" id="keterangan-box">
         Keterangan :<br><br>
         BRI 6691 0101 5718 506 a/n Yohanes purwanto
     </div>
@@ -277,7 +271,6 @@ const p = new URLSearchParams(window.location.search);
 
 function terbilang(nilai) {
     const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
-
     function penyebut(n) {
         n = Math.floor(n);
         if (n < 0) return "";
@@ -291,11 +284,46 @@ function terbilang(nilai) {
         if (n < 1000000000) return penyebut(Math.floor(n / 1000000)) + " juta " + penyebut(n % 1000000);
         return "";
     }
-
     if (nilai === 0) return "nol";
     return penyebut(nilai).replace(/\s+/g, ' ').trim();
 }
 
+// 🎯 FUNGSI UPDATE KETERANGAN BERDASARKAN SISA HITUNGAN
+function updateStatusKeterangan(sisaTagihan, sisaDeposit) {
+    let statusText = "";
+    let statusColor = "";
+    let ekstraTeks = "";
+    const infoRekening = "Info Rekening:<br><b>BRI 6691 0101 5718 506</b><br>a/n Yohanes purwanto";
+
+    // ATURAN UTAMA: Jika parameter sisa deposit > 0, otomatis LUNAS
+    if (sisaDeposit > 0) {
+        statusText = "LUNAS (Ada Sisa Deposit)";
+        statusColor = "#16a34a"; // Hijau
+        ekstraTeks = `
+            <div style="margin-top:6px; padding:5px; background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:4px; font-size:11px;">
+                *Terdapat sisa saldo deposit mengendap sebesar:<br>
+                <b>Rp ${sisaDeposit.toLocaleString("id-ID")}</b>
+            </div>`;
+    } 
+    // Jika tidak ada sisa deposit, cek apakah tagihan masih bersisa
+    else if (sisaTagihan > 0) {
+        statusText = "BELUM LUNAS";
+        statusColor = "#dc2626"; // Merah
+    } 
+    // Jika sisa deposit 0 dan sisa tagihan 0 (Bayar Pas)
+    else {
+        statusText = "LUNAS";
+        statusColor = "#16a34a"; // Hijau
+    }
+
+    document.getElementById("keterangan-box").innerHTML = `
+        <div style="font-size:15px; font-weight:900; color:${statusColor}; border-bottom:2px solid ${statusColor}; padding-bottom:5px; margin-bottom:8px;">
+            STATUS: ${statusText}
+        </div>
+        <div style="font-size:11px; line-height:1.4;">${infoRekening}</div>
+        ${ekstraTeks}
+    `;
+}
 function renderTable() {
     let detail = p.get("detail") || "";
     let grandTotal = Number(p.get("grand")) || 0;
@@ -330,20 +358,28 @@ function renderTable() {
     document.getElementById("terbilang").innerText = "Terbilang : " + terbilang(grandTotal) + " rupiah";
 
     let topValue = (p.get("top") || "-").trim().toLowerCase();
-    if (topValue === "cash" || topValue === "-" || topValue === "") {
-        document.getElementById("section-riwayat").style.display = "none";
-    } else {
-        renderRiwayat(grandTotal);
-    }
+    
+    // Panggil logika riwayat & Keterangan
+    renderRiwayat(grandTotal, topValue);
 }
 
-function renderRiwayat(grandTotal) {
+function renderRiwayat(grandTotal, topValue) {
     let bayarParam = p.get("bayar") || "";
+    
+    // 🎯 TANGKAP PARAMETER SISA DEPOSIT (Contoh di URL: &sisa_deposit=150000)
+    let sisaDepositParam = Number(p.get("sisa_deposit")) || 0;
+    
     if (!bayarParam) {
-        document.getElementById("section-riwayat").style.display = "block";
-        document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran</td></tr>`;
-        document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
-        document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
+        if (topValue === "cash" || topValue === "-" || topValue === "") {
+            document.getElementById("section-riwayat").style.display = "none";
+            updateStatusKeterangan(0, sisaDepositParam); 
+        } else {
+            document.getElementById("section-riwayat").style.display = "block";
+            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran</td></tr>`;
+            document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
+            document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
+            updateStatusKeterangan(grandTotal, sisaDepositParam); 
+        }
         return;
     }
 
@@ -360,25 +396,39 @@ function renderRiwayat(grandTotal) {
 
         totalMasuk += jumlah;
 
+        let badgeClass = "badge-default";
+        let textJenis = jenisBayar.toUpperCase();
+        if(textJenis.includes("DEPOSIT")) badgeClass = "badge-deposit";
+        else if(textJenis.includes("CASH") || textJenis.includes("TUNAI")) badgeClass = "badge-cash";
+        else if(textJenis.includes("TRANSFER")) badgeClass = "badge-transfer";
+
         tbodyRiwayat += `
         <tr>
             <td>${tglBayar}</td>
-            <td>${jenisBayar}</td>
+            <td><span class="badge ${badgeClass}">${jenisBayar}</span></td>
             <td class="right">${jumlah.toLocaleString("id-ID")}</td>
         </tr>
         `;
     });
 
-    let sisaBayar = grandTotal - totalMasuk;
-    if (sisaBayar < 0) sisaBayar = 0;
+    // Hitung sisa tagihan aktual untuk tabel
+    let sisaSebenarnya = grandTotal - totalMasuk;
+    let sisaTampil = sisaSebenarnya < 0 ? 0 : sisaSebenarnya;
+
+    // Paksa sisa tabel jadi 0 jika ada parameter sisa deposit (Sesuai aturan: Deposit ada = Pasti Lunas)
+    if (sisaDepositParam > 0) {
+        sisaTampil = 0;
+    }
 
     document.getElementById("tbody-riwayat").innerHTML = tbodyRiwayat;
-    document.getElementById("sisa-bayar").innerText = sisaBayar.toLocaleString("id-ID");
-    document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaBayar) + " rupiah";
-    
+    document.getElementById("sisa-bayar").innerText = sisaTampil.toLocaleString("id-ID");
+    document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaTampil) + " rupiah";
     document.getElementById("section-riwayat").style.display = "block";
-}
 
+    // 🎯 PANGGIL FUNGSI KETERANGAN DENGAN 2 VARIABEL: Sisa Tagihan & Parameter Sisa Deposit
+    updateStatusKeterangan(sisaTampil, sisaDepositParam);
+}
+    
 function setHeader(){
     document.getElementById("customer").innerText = p.get("customer") || "-";
     document.getElementById("alamat").innerText = p.get("alamat") || "-";
@@ -389,16 +439,14 @@ function setHeader(){
     document.getElementById("top").innerText = p.get("top") || "-";
     document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
 }
+
 window.onload = function(){
     renderTable();
     setHeader();
 
     const noFaktur = p.get("no") || "Tanpa_Nomor";
-    const namaCust = p.get("customer") || "Pelanggan";
-    const tglFaktur = p.get("tanggal") || "-";
     const grandTotal = Number(p.get("grand")) || 0;
 
-    // 🎯 STRATEGI PREMIUM 4 TOMBOL MENGGUNAKAN ELEMEN HTML KUSTOM
     Swal.fire({
         title: 'FAKTUR PENJUALAN SIAP!',
         html: `
@@ -423,13 +471,11 @@ window.onload = function(){
             </div>
         `,
         icon: 'info',
-        showConfirmButton: false, // Matikan tombol bawaan SweetAlert agar tidak double
+        showConfirmButton: false, 
         allowOutsideClick: false,
         didOpen: () => {
-            // Kita tangkap event klik masing-masing tombol kustom setelah SweetAlert terbuka
             const content = Swal.getHtmlContainer();
             
-            // Konfigurasi Standar html2pdf
             const elemenFaktur = document.getElementById('faktur-area');
             const namaFilePdf = `Faktur_Penjualan_${noFaktur}.pdf`;
             const opsiSetting = {
@@ -440,13 +486,11 @@ window.onload = function(){
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 🖨️ AKSI 1: TOMBOL CETAK
             content.querySelector('#btn-cetak').addEventListener('click', () => {
                 Swal.close();
                 window.print();
             });
 
-            // 📄 AKSI 2: TOMBOL BAGIKAN PDF (Jalur laci HP)
             content.querySelector('#btn-share-laci').addEventListener('click', () => {
                 Swal.fire({
                     title: 'Menyiapkan PDF...',
@@ -478,7 +522,6 @@ window.onload = function(){
                 }, 800);
             });
 
-            // 📲 AKSI 3: TOMBOL SIMPAN & KIRIM TEKS (Solusi Browser Klien)
             content.querySelector('#btn-simpan-teks').addEventListener('click', () => {
                 Swal.fire({
                     title: 'Mengunduh PDF...',
@@ -489,7 +532,6 @@ window.onload = function(){
 
                 setTimeout(() => {
                     html2pdf().set(opsiSetting).from(elemenFaktur).save().then(() => {
-                        
                         let teksWA = `*FAKTUR PENJUALAN - BCMS*\n`;
                         teksWA += `----------------------------------------\n`;
                         teksWA += `No Faktur : ${noFaktur}\n`;
@@ -515,7 +557,6 @@ window.onload = function(){
                 }, 800);
             });
 
-            // 🛑 AKSI 4: TOMBOL TUTUP FAKTUR
             content.querySelector('#btn-tutup-faktur').addEventListener('click', () => {
                 Swal.close();
             });
