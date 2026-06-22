@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Faktur Pembelian BCMS 80mm</title>
+<style>
+/* --- SETTING STANDAR THERMAL 80MM --- */
+@page {
+    size: 80mm auto;
+    margin: 0;
+}
+body {
+    font-family: 'Courier New', Courier, monospace;
+    width: 72mm; /* Batas ruang cetak bersih printer thermal 80mm */
+    margin: 0 auto;
+    padding: 3mm 1mm;
+    font-size: 10pt;
+    line-height: 1.2;
+    color: #000;
+    background-color: #fff;
+}q
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.bold { font-weight: bold; }
+
+/* Kop Perusahaan */
+.header {
+    margin-bottom: 2mm;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 2mm;
+}
+.company-name {
+    font-size: 11pt;
+    font-weight: bold;
+    letter-spacing: -0.2px;
+}
+.address {
+    font-size: 8.5pt;
+}
+
+.doc-title {
+    font-size: 11pt;
+    font-weight: bold;
+    margin: 2mm 0;
+}
+
+.info-table, .item-table, .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin-bottom: 2mm;
+}
+.info-table td {
+    vertical-align: top;
+    padding: 0.6mm 0;
+}
+
+.divider {
+    border-top: 1px dashed #000;
+    margin: 2mm 0;
+}
+
+/* Tabel Item Barang */
+.item-table th {
+    border-bottom: 1px solid #000;
+    border-top: 1px solid #000;
+    text-align: left;
+    font-size: 8.5pt;
+    padding: 1mm 0;
+}
+.item-table td {
+    padding: 1mm 0;
+    font-size: 8.5pt;
+    vertical-align: top;
+}
+.total-row td {
+    border-top: 1px dashed #000;
+    padding-top: 1mm;
+}
+
+/* Keterangan & Status Box */
+.status-box {
+    border: 1px solid #000;
+    padding: 1.5mm;
+    margin: 2mm 0;
+    font-size: 9pt;
+}
+.status-title {
+    font-weight: bold;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.5mm;
+    margin-bottom: 1mm;
+}
+
+.terbilang-text {
+    font-style: italic;
+    font-size: 8pt;
+    margin-top: 1mm;
+}
+
+.footnote {
+    font-size: 7.5pt;
+    margin-top: 4mm;
+    text-align: center;
+}
+
+/* Pengaturan Cetak Browser */
+@media print {
+    body { width: 72mm; }
+    html, body { background: #fff; }
+}
+</style>
+</head>
+
+<body>
+
+    <div class="header text-center">
+        <div class="company-name">BERKAH CRISTAL MANIS SEJAHTERA</div>
+        <div class="address">Dusun Blanakan RT 003/002, Wonodasi</div>
+        <div class="address">Desa Wonodadi - Kec. Buayan</div>
+        <div class="address">Kab. KEBUMEN - Kode Pos 54474</div>
+        <div class="address">Telp: 0813 3639 8800, 0812 33759743</div>
+    </div>
+
+    <div class="text-center">
+        <div class="doc-title">FAKTUR PEMBELIAN</div>
+    </div>
+    
+    <div class="divider"></div>
+
+    <table class="info-table">
+        <tr><td style="width: 28%;">Faktur:</td><td class="bold" id="no"></td></tr>
+        <tr><td>Tanggal:</td><td id="tanggal"></td></tr>
+        <tr><td>Supplier:</td><td class="bold" id="customer"></td></tr>
+        <tr><td>Alamat:</td><td id="alamat"></td></tr>
+        <tr><td>TOP/J.T:</td><td><span id="top"></span> / <span id="jatuhTempo"></span></td></tr>
+        <tr><td>Ekspedisi:</td><td id="xpdc"></td></tr>
+        <tr><td>Tgl Kirim:</td><td id="tglKirim"></td></tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Nama Barang</th>
+                <th style="width: 15%; text-align: center;">Qty</th>
+                <th style="width: 35%; text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+
+    <table class="summary-table">
+        <tr><td>Sub Total</td><td class="text-right" id="subtotal">0</td></tr>
+        <tr><td>Diskon / PPN</td><td class="text-right">0 / 0</td></tr>
+        <tr class="bold" style="border-top: 1px dotted #000;">
+            <td style="padding-top: 1mm;">Total Tagihan</td>
+            <td class="text-right" style="padding-top: 1mm;">Rp <span id="grandTotal">0</span></td>
+        </tr>
+    </table>
+
+    <div id="terbilang" class="terbilang-text" style="border-top: 1px dotted #000; padding-top: 1mm;">Terbilang: -</div>
+
+    <div id="section-riwayat" style="display:none; margin-top: 2mm;">
+        <div class="bold" style="font-size: 8.5pt; border-bottom: 1px solid #000; padding-bottom: 0.5mm;">Riwayat Angsuran:</div>
+        <table class="item-table" style="margin-bottom: 1mm;">
+            <tbody id="tbody-riwayat"></tbody>
+            <tr class="total-row bold" style="border-top: 1px solid #000;">
+                <td colspan="2">Sisa Tagihan Faktur:</td>
+                <td class="text-right" style="color: red;">Rp <span id="sisa-bayar">0</span></td>
+            </tr>
+        </table>
+        <div id="terbilang-sisa" class="terbilang-text" style="text-align: right; font-size: 7.5pt; margin-bottom: 2mm;"></div>
+    </div>
+
+    <div class="status-box" id="keterangan-box"></div>
+
+    <div class="footnote">
+        * Struk Faktur Pembelian Otomatis *<br>
+        Sistem Internal BCMS Engine.<br>
+        Terima Kasih.
+    </div>
+
+<script>
+const p = new URLSearchParams(window.location.search);
+
+function terbilang(nilai) {
+    const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+    function penyebut(n) {
+        n = Math.floor(n); if (n < 0) return ""; if (n < 12) return huruf[n];
+        if (n < 20) return penyebut(n - 10) + " belas";
+        if (n < 100) return penyebut(Math.floor(n / 10)) + " puluh " + penyebut(n % 10);
+        if (n < 200) return "seratus " + penyebut(n - 100);
+        if (n < 1000) return penyebut(Math.floor(n / 100)) + " ratus " + penyebut(n % 100);
+        if (n < 2000) return "seribu " + penyebut(n - 1000);
+        if (n < 1000000) return penyebut(Math.floor(n / 1000)) + " ribu " + penyebut(n % 1000);
+        if (n < 1000000000) return penyebut(Math.floor(n / 1000000)) + " juta " + penyebut(n % 1000000);
+        return "";
+    }
+    if (nilai === 0) return "nol";
+    return penyebut(nilai).replace(/\s+/g, ' ').trim();
+}
+
+function updateStatusKeterangan(sisaTagihan, sisaDeposit) {
+    let statusTitle = "";
+    let deskripsi = "";
+
+    if (sisaDeposit > 0) {
+        statusTitle = "LUNAS (Sisa Deposit)";
+        deskripsi = `Transaksi telah dibayar penuh. Terdapat sisa saldo deposit Pabrik di supplier sebesar Rp ${sisaDeposit.toLocaleString("id-ID")}.`;
+    } else if (sisaTagihan > 0) {
+        statusTitle = "BELUM LUNAS";
+        deskripsi = `Terdapat sisa tagihan berjalan sebesar Rp ${sisaTagihan.toLocaleString("id-ID")} yang belum terbayarkan.`;
+    } else {
+        statusTitle = "LUNAS";
+        deskripsi = `Transaksi ini telah diselesaikan dan dibayar penuh.`;
+    }
+
+    document.getElementById("keterangan-box").innerHTML = `
+        <div class="status-title">STATUS: ${statusTitle}</div>
+        <div style="line-height:1.4;">${deskripsi}</div>
+    `;
+}
+
+function renderTable() {
+    let detail = p.get("detail") || "";
+    let grandTotal = Number(p.get("grand")) || 0;
+    let items = detail.split(",").map(x => x.trim());
+    let tbody = "";
+
+    items.forEach(row => {
+        if(!row) return;
+        let col = row.split("|");
+        let nama   = col[1] || "";
+        let qty    = Number(col[2]) || 0;
+        let satuan = col[3] || "";
+        let total  = Number(col[5]) || 0;
+
+        tbody += `
+        <tr>
+            <td>${nama}</td>
+            <td class="text-center">${qty} ${satuan}</td>
+            <td class="text-right">${total.toLocaleString("id-ID")}</td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("tbody").innerHTML = tbody;
+    document.getElementById("grandTotal").innerText = grandTotal.toLocaleString("id-ID");
+    document.getElementById("subtotal").innerText = grandTotal.toLocaleString("id-ID");
+    document.getElementById("terbilang").innerText = "Terbilang: * " + terbilang(grandTotal) + " rupiah *";
+
+    let topValue = (p.get("top") || "-").trim().toLowerCase();
+    renderRiwayat(grandTotal, topValue);
+}
+
+function renderRiwayat(grandTotal, topValue) {
+    let bayarParam = p.get("bayar") || "";
+    let sisaDepositParam = Number(p.get("sisa_deposit")) || 0;
+    
+    if (!bayarParam) {
+        if (topValue === "cash" || topValue === "-" || topValue === "") {
+            document.getElementById("section-riwayat").style.display = "none";
+            updateStatusKeterangan(0, sisaDepositParam); 
+        } else {
+            document.getElementById("section-riwayat").style.display = "block";
+            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic; font-size:8pt; padding:1mm 0;">* Belum ada riwayat pembayaran *</td></tr>`;
+            document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
+            document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
+            updateStatusKeterangan(grandTotal, sisaDepositParam); 
+        }
+        return;
+    }
+
+    let listBayar = bayarParam.split(",").map(x => x.trim());
+    let tbodyRiwayat = "";
+    let totalMasuk = 0;
+
+    listBayar.forEach(row => {
+        if(!row) return;
+        let col = row.split("|");
+        let tglBayar   = col[0] || "-";
+        let jenisBayar = col[1] || "-";
+        let jumlah     = Number(col[3]) || 0;
+
+        totalMasuk += jumlah;
+
+        tbodyRiwayat += `
+        <tr>
+            <td>${tglBayar} (${jenisBayar})</td>
+            <td colspan="2" class="text-right">-${jumlah.toLocaleString("id-ID")}</td>
+        </tr>
+        `;
+    });
+
+    let sisaSebenarnya = grandTotal - totalMasuk;
+    let sisaTampil = sisaSebenarnya < 0 ? 0 : sisaSebenarnya;
+
+    if (sisaDepositParam > 0) { sisaTampil = 0; }
+
+    document.getElementById("tbody-riwayat").innerHTML = tbodyRiwayat;
+    document.getElementById("sisa-bayar").innerText = sisaTampil.toLocaleString("id-ID");
+    document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaTampil) + " rupiah";
+    document.getElementById("section-riwayat").style.display = "block";
+
+    updateStatusKeterangan(sisaTampil, sisaDepositParam);
+}
+
+function setHeader(){
+    document.getElementById("customer").innerText = p.get("customer") || "-";
+    document.getElementById("alamat").innerText = p.get("alamat") || "-";
+    document.getElementById("tanggal").innerText = p.get("tanggal") || "-";
+    document.getElementById("no").innerText = p.get("no") || "-";
+    document.getElementById("jatuhTempo").innerText = p.get("jatuhTempo") || "-";
+    document.getElementById("tglKirim").innerText = p.get("tglKirim") || "-";
+    document.getElementById("top").innerText = p.get("top") || "-";
+    document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
+}
+
+// 🎯 SETELAH DATA SELESAI DI-RENDER, LANGSUNG PUNYA TRIGER WINDOW PRINT OTOMATIS
+window.onload = function(){
+    renderTable();
+    setHeader();
+    
+    // Memicu jendela cetak langsung tanpa tertahan pop-up SweetAlert
+    setTimeout(function() {
+        window.print();
+    }, 500);
+}
+</script>
+
+</body>
+</html>
