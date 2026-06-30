@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Faktur Pembelian BCMS</title>
+<style>
+    /* Setting untuk menghilangkan spasi kertas kosong */
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        width: 72mm;
+        margin: 0 auto;
+        padding: 2mm 1mm;
+        font-size: 9pt;
+        line-height: 1.1;
+        color: #000;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .bold { font-weight: bold; }
+
+    .header { margin-bottom: 1mm; border-bottom: 1px dashed #000; padding-bottom: 1mm; }
+    .company-name { font-size: 10pt; font-weight: bold; }
+    .address { font-size: 7.5pt; }
+
+    .info-table { width: 100%; margin: 1mm 0; }
+    .info-table td { padding: 0.2mm 0; }
+
+    .item-table { width: 100%; border-collapse: collapse; margin: 1mm 0; }
+    .item-table th { border-bottom: 1px dashed #000; text-align: left; padding: 1mm 0; }
+    .item-table td { padding: 0.5mm 0; }
+
+    .status-box {
+        border: 1px solid #000;
+        padding: 2mm;
+        margin-top: 2mm;
+        text-align: center;
+    }
+    
+    .footnote { font-size: 7pt; margin-top: 2mm; text-align: center; }
+
+    @media print {
+        body { width: 72mm; margin: 0; padding: 1mm; }
+    }
+</style>
+</head>
+
+<body>
+
+    <div class="header text-center">
+        <div class="company-name">BERKAH CRISTAL MANIS SEJAHTERA</div>
+        <div class="address">Dusun Blanakan, Wonodasi, Kebumen</div>
+    </div>
+
+    <table class="info-table">
+        <tr><td>Faktur:</td><td class="bold" id="no"></td></tr>
+        <tr><td>Tgl:</td><td id="tanggal"></td></tr>
+    </table>
+
+    <table class="item-table">
+        <thead><tr><th>Item</th><th class="text-right">Total</th></tr></thead>
+        <tbody id="tbody"></tbody>
+    </table>
+
+    <div class="text-right bold" style="border-top: 1px dashed #000; padding: 1mm 0;">
+        TOTAL: Rp <span id="grandTotal">0</span>
+    </div>
+
+    <div class="status-box" id="status-box">
+        <div class="bold" id="status-text">STATUS: LUNAS</div>
+        <div style="font-size: 8pt; margin-top: 1mm;" id="keterangan-text"></div>
+    </div>
+
+    <div class="footnote">
+        * Sistem Internal BCMS Engine *<br>
+        Terima Kasih
+    </div>
+
+<script>
+const p = new URLSearchParams(window.location.search);
+
+function render() {
+    // Header
+    document.getElementById("no").innerText = p.get("no") || "-";
+    document.getElementById("tanggal").innerText = p.get("tanggal") || "-";
+    
+    // Items
+    let detail = p.get("detail") || "";
+    let grand = Number(p.get("grand")) || 0;
+    let items = detail.split(",");
+    let tbody = "";
+    items.forEach(row => {
+        let col = row.split("|");
+        if(col.length > 1) {
+            tbody += `<tr><td>${col[1]} x ${col[2]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
+        }
+    });
+    document.getElementById("tbody").innerHTML = tbody;
+    document.getElementById("grandTotal").innerText = grand.toLocaleString("id-ID");
+
+    // Status Lunas/Belum
+    let top = (p.get("top") || "").toLowerCase();
+    let bayar = Number(p.get("bayar") || 0);
+    
+    if (top === "cash" || bayar >= grand) {
+        document.getElementById("status-text").innerText = "STATUS: LUNAS";
+        document.getElementById("keterangan-text").innerText = "Pembayaran telah diterima sepenuhnya.";
+    } else {
+        let sisa = grand - bayar;
+        document.getElementById("status-text").innerText = "STATUS: BELUM LUNAS";
+        document.getElementById("keterangan-text").innerText = "Sisa tagihan: Rp " + sisa.toLocaleString("id-ID");
+    }
+
+    // Trigger cetak
+    setTimeout(window.print, 500);
+}
+
+window.onload = render;
+</script>
+</body>
+</html>
