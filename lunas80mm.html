@@ -2,124 +2,121 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Faktur Pembelian BCMS</title>
+<title>Faktur Pembelian</title>
 <style>
-    /* Setting untuk menghilangkan spasi kertas kosong */
-    @page {
-        size: 80mm auto;
-        margin: 0;
-    }
+    /* Mengatasi kertas kosong: Menggunakan height auto dan margin 0 */
+    @page { size: 80mm auto; margin: 0; }
     body {
         font-family: 'Courier New', Courier, monospace;
         width: 72mm;
         margin: 0 auto;
-        padding: 2mm 1mm;
+        padding: 2mm;
         font-size: 9pt;
-        line-height: 1.1;
+        line-height: 1.2;
         color: #000;
     }
 
     .text-center { text-align: center; }
     .text-right { text-align: right; }
     .bold { font-weight: bold; }
+    .divider { border-top: 1px dashed #000; margin: 2mm 0; }
 
-    .header { margin-bottom: 1mm; border-bottom: 1px dashed #000; padding-bottom: 1mm; }
-    .company-name { font-size: 10pt; font-weight: bold; }
-    .address { font-size: 7.5pt; }
+    .header { margin-bottom: 2mm; }
+    .company-name { font-weight: bold; font-size: 10pt; }
+    .address { font-size: 8pt; }
 
-    .info-table { width: 100%; margin: 1mm 0; }
-    .info-table td { padding: 0.2mm 0; }
+    .info-table { width: 100%; font-size: 8.5pt; margin-bottom: 2mm; }
+    .info-table td { padding: 0.5mm 0; vertical-align: top; }
 
-    .item-table { width: 100%; border-collapse: collapse; margin: 1mm 0; }
+    .item-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 2mm; }
     .item-table th { border-bottom: 1px dashed #000; text-align: left; padding: 1mm 0; }
-    .item-table td { padding: 0.5mm 0; }
+    .item-table td { padding: 1mm 0; }
 
-    .status-box {
-        border: 1px solid #000;
-        padding: 2mm;
-        margin-top: 2mm;
-        text-align: center;
-    }
-    
-    .footnote { font-size: 7pt; margin-top: 2mm; text-align: center; }
-
-    @media print {
-        body { width: 72mm; margin: 0; padding: 1mm; }
-    }
+    .status-box { border: 1px solid #000; padding: 2mm; margin: 2mm 0; }
+    .footnote { font-size: 7.5pt; text-align: center; margin-top: 2mm; }
 </style>
 </head>
-
 <body>
 
     <div class="header text-center">
         <div class="company-name">BERKAH CRISTAL MANIS SEJAHTERA</div>
-        <div class="address">Dusun Blanakan, Wonodasi, Kebumen</div>
+        <div class="address">Dusun Blanakan RT 003/002, Wonodasi<br>Desa Wonodadi - Kec. Buayan<br>Kab. KEBUMEN - Kode Pos 54474<br>Telp: 0813 3639 8800, 0812 33759743</div>
     </div>
+    
+    <div class="text-center bold">FAKTUR PEMBELIAN</div>
+    <div class="divider"></div>
 
     <table class="info-table">
-        <tr><td>Faktur:</td><td class="bold" id="no"></td></tr>
-        <tr><td>Tgl:</td><td id="tanggal"></td></tr>
+        <tr><td style="width: 30%;">Faktur:</td><td class="bold" id="no"></td></tr>
+        <tr><td>Tanggal:</td><td id="tanggal"></td></tr>
+        <tr><td>Supplier:</td><td class="bold" id="customer"></td></tr>
+        <tr><td>Alamat:</td><td id="alamat"></td></tr>
+        <tr><td>TOP/J.T:</td><td><span id="top"></span> / <span id="jatuhTempo"></span></td></tr>
+        <tr><td>Ekspedisi:</td><td id="xpdc"></td></tr>
+        <tr><td>Tgl Kirim:</td><td id="tglKirim"></td></tr>
     </table>
 
+    <div class="divider"></div>
+
     <table class="item-table">
-        <thead><tr><th>Item</th><th class="text-right">Total</th></tr></thead>
+        <thead><tr><th>Nama Barang</th><th>Qty</th><th class="text-right">Total</th></tr></thead>
         <tbody id="tbody"></tbody>
     </table>
 
     <div class="text-right bold" style="border-top: 1px dashed #000; padding: 1mm 0;">
-        TOTAL: Rp <span id="grandTotal">0</span>
+        Total Tagihan: Rp <span id="grandTotal">0</span>
     </div>
 
-    <div class="status-box" id="status-box">
-        <div class="bold" id="status-text">STATUS: LUNAS</div>
-        <div style="font-size: 8pt; margin-top: 1mm;" id="keterangan-text"></div>
+    <div class="status-box" id="keterangan-box">
+        <div class="bold" id="status-title">STATUS: -</div>
+        <div id="deskripsi" style="font-size: 8.5pt;">-</div>
     </div>
 
     <div class="footnote">
-        * Sistem Internal BCMS Engine *<br>
-        Terima Kasih
+        * Struk Faktur Pembelian Otomatis *<br>Sistem Internal BCMS Engine.<br>Terima Kasih.
     </div>
 
 <script>
 const p = new URLSearchParams(window.location.search);
 
-function render() {
-    // Header
+function init() {
+    // Isi Header
     document.getElementById("no").innerText = p.get("no") || "-";
     document.getElementById("tanggal").innerText = p.get("tanggal") || "-";
-    
-    // Items
-    let detail = p.get("detail") || "";
-    let grand = Number(p.get("grand")) || 0;
-    let items = detail.split(",");
+    document.getElementById("customer").innerText = p.get("customer") || "-";
+    document.getElementById("alamat").innerText = p.get("alamat") || "-";
+    document.getElementById("top").innerText = p.get("top") || "-";
+    document.getElementById("jatuhTempo").innerText = p.get("jatuhTempo") || "-";
+    document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
+    document.getElementById("tglKirim").innerText = p.get("tglKirim") || "-";
+
+    // Isi Item
+    let detail = (p.get("detail") || "").split(",");
     let tbody = "";
-    items.forEach(row => {
+    detail.forEach(row => {
         let col = row.split("|");
         if(col.length > 1) {
-            tbody += `<tr><td>${col[1]} x ${col[2]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
+            tbody += `<tr><td>${col[1]}</td><td>${col[2]} ${col[3]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
         }
     });
     document.getElementById("tbody").innerHTML = tbody;
+    
+    let grand = Number(p.get("grand")) || 0;
     document.getElementById("grandTotal").innerText = grand.toLocaleString("id-ID");
 
-    // Status Lunas/Belum
-    let top = (p.get("top") || "").toLowerCase();
-    let bayar = Number(p.get("bayar") || 0);
-    
-    if (top === "cash" || bayar >= grand) {
-        document.getElementById("status-text").innerText = "STATUS: LUNAS";
-        document.getElementById("keterangan-text").innerText = "Pembayaran telah diterima sepenuhnya.";
+    // Status
+    let sisa = Number(p.get("sisa")) || 0;
+    if(sisa <= 0) {
+        document.getElementById("status-title").innerText = "STATUS: LUNAS";
+        document.getElementById("deskripsi").innerText = "Transaksi ini telah diselesaikan dan dibayar penuh.";
     } else {
-        let sisa = grand - bayar;
-        document.getElementById("status-text").innerText = "STATUS: BELUM LUNAS";
-        document.getElementById("keterangan-text").innerText = "Sisa tagihan: Rp " + sisa.toLocaleString("id-ID");
+        document.getElementById("status-title").innerText = "STATUS: BELUM LUNAS";
+        document.getElementById("deskripsi").innerText = "Sisa tagihan: Rp " + sisa.toLocaleString("id-ID");
     }
 
-    // Trigger cetak
     setTimeout(window.print, 500);
 }
-
-window.onload = render;
+window.onload = init;
 </script>
 </body>
 </html>
