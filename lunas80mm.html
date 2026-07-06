@@ -59,7 +59,7 @@
     <div class="divider"></div>
 
     <table class="item-table">
-        <thead><tr><th>Nama Barang</th><th>Qty</th><th class="text-right">Total</th></tr></thead>
+        <thead><tr><th colspan=2>Nama Barang</th><th class="text-right">Total</th></tr></thead>
         <tbody id="tbody"></tbody>
     </table>
 
@@ -96,7 +96,7 @@ function init() {
     detail.forEach(row => {
         let col = row.split("|");
         if(col.length > 1) {
-            tbody += `<tr><td>${col[1]}</td><td>${col[2]} ${col[3]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
+            tbody += `<tr><td colspan=2>${col[1]}<p>${col[2]} x ${col[4]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
         }
     });
     document.getElementById("tbody").innerHTML = tbody;
