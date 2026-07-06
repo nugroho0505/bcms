@@ -81,18 +81,14 @@ function init() {
     document.getElementById("tanggal").innerText = p.get("tanggal") || "-";
     document.getElementById("customer").innerText = p.get("customer") || "-";
     document.getElementById("alamat").innerText = p.get("alamat") || "-";
-    document.getElementById("top").innerText = p.get("top") || "-";
-    document.getElementById("jatuhTempo").innerText = p.get("jatuhTempo") || "-";
-    document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
-    document.getElementById("tglKirim").innerText = p.get("tglKirim") || "-";
-
+    
     // Isi Item
     let detail = (p.get("detail") || "").split(",");
     let tbody = "";
     detail.forEach(row => {
         let col = row.split("|");
         if(col.length > 1) {
-            tbody += `<tr><td colspan="2">${col[1]}<br>${col[2]} x ${col[4]}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
+            tbody += `<tr><td colspan="2">${col[1]}<br>${col[2]} x ${Number(col[4]).toLocaleString("id-ID")}</td><td class="text-right">${Number(col[5]).toLocaleString("id-ID")}</td></tr>`;
         }
     });
     document.getElementById("tbody").innerHTML = tbody;
