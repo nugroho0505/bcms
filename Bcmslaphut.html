@@ -167,6 +167,12 @@
             document.getElementById('lbl-tgl-cetak').innerText = "Tgl Cetak: " + (p.get("tanggal") || new Date().toLocaleDateString('id-ID'));
             document.getElementById('name-admin-footer').innerText = p.get("admin") || "Admin Keuangan";
             document.getElementById('name-supplier-footer').innerText = sName;
+            document.getElementById('grand-bruto').innerText = formatRupiah(paramBruto);
+document.getElementById('grand-bayar').innerText = "- " + formatRupiah(paramBayar);
+document.getElementById('grand-netto').innerText = formatRupiah(paramGrand);
+            const paramBruto = Number(p.get("bruto")) || 0;
+const paramBayar = Number(p.get("bayar")) || 0;
+const paramGrand = Number(p.get("grand")) || 0;
 
             // 🎯 PARSING 3T-ARREARS DATA PARAMETER
             let notaParam   = p.get("nota_list") || "";
