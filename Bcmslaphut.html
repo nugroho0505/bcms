@@ -167,15 +167,6 @@
             document.getElementById('lbl-tgl-cetak').innerText = "Tgl Cetak: " + (p.get("tanggal") || new Date().toLocaleDateString('id-ID'));
             document.getElementById('name-admin-footer').innerText = p.get("admin") || "Admin Keuangan";
             document.getElementById('name-supplier-footer').innerText = sName;
-            const paramBruto = Number(p.get("bruto")) || 0;
-            const paramBayar = Number(p.get("bayar")) || 0;
-            const paramGrand = Number(p.get("grand")) || 0;
-
-            // Cetak langsung dari parameter (mengabaikan tBruto dan tBayar dari hasil looping)
-            document.getElementById('grand-bruto').innerText = formatRupiah(paramBruto);
-            document.getElementById('grand-bayar').innerText = "- " + formatRupiah(paramBayar);
-            document.getElementById('grand-netto').innerText = formatRupiah(paramGrand);
-            document.getElementById('lbl-terbilang').innerHTML = "Terbilang: * " + hitungTerbilang(paramGrand) + " rupiah *";
             // 🎯 PARSING 3T-ARREARS DATA PARAMETER
             let notaParam   = p.get("nota_list") || "";
             let detailParam = p.get("detail_nota") || "";
@@ -272,12 +263,15 @@
                 });
             }
 
-            let grandParam = Number(p.get("grand")) || tNetto;
-            document.getElementById('grand-bruto').innerText = formatRupiah(tBruto);
-            document.getElementById('grand-bayar').innerText = "- " + formatRupiah(tBayar);
-            document.getElementById('grand-netto').innerText = formatRupiah(grandParam);
-            document.getElementById('lbl-terbilang').innerHTML = "Terbilang: * " + hitungTerbilang(grandParam) + " rupiah *";
+            const paramBruto = Number(p.get("bruto")) || 0;
+            const paramBayar = Number(p.get("bayar")) || 0;
+            const paramGrand = Number(p.get("grand")) || 0;
 
+            // Cetak langsung dari parameter (mengabaikan tBruto dan tBayar dari hasil looping)
+            document.getElementById('grand-bruto').innerText = formatRupiah(paramBruto);
+            document.getElementById('grand-bayar').innerText = "- " + formatRupiah(paramBayar);
+            document.getElementById('grand-netto').innerText = formatRupiah(paramGrand);
+            document.getElementById('lbl-terbilang').innerHTML = "Terbilang: * " + hitungTerbilang(paramGrand) + " rupiah *";
             setTimeout(() => {
                 Swal.fire({
                     title: 'DOCUMENT SIAP !',
