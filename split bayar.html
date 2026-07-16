@@ -37,7 +37,7 @@
         .report-title-section p.doc-number { margin: 5px 0 0 0; font-size: 13px; color: #0f172a; font-weight: 600; }
 
         /* Info Supplier */
-        .supplier-header-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin-bottom: 25px; }
+        .supplier-header-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin-bottom: 20px; }
         .sup-table { width: 100%; border-collapse: collapse; }
         .sup-table td { padding: 5px 0; font-size: 13px; vertical-align: top; }
         .sup-table td.lbl { color: #64748b; width: 22%; }
@@ -70,12 +70,7 @@
         
         .card-foot { background: #ffffff; padding: 12px 16px; text-align: right; font-weight: 600; font-size: 13px; border-top: 1px solid #e2e8f0; }
 
-        /* Summary Box Bawah */
-        .summary-box-grand { background: #fef2f2; border: 1px solid #fee2e2; border-radius: 6px; padding: 20px; margin-top: 25px; }
-        .smr-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: #475569; font-size: 13px; }
-        .smr-row.grand-total { margin-top: 12px; padding-top: 12px; border-top: 1px solid #fca5a5; font-size: 16px; font-weight: 700; color: #991b1b; }
-        .spelled-out-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #fca5a5; font-size: 12px; color: #4b5563; font-style: italic; font-weight: 500; text-align: left; }
-
+        /* Signatures */
         .signatures-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; text-align: center; }
         .sig-col p { margin: 0; font-size: 12px; color: #64748b; }
         .sig-space-blank { height: 70px; } 
@@ -96,7 +91,6 @@
             
             <div class="invoice-kop-container">
                 <div class="kop-logo-wrapper">
-                    <!-- Pastikan path logo sesuai dengan aset Anda -->
                     <img src="logobcms.png" alt="Logo BCMS">
                 </div>
                 <div class="kop-text-wrapper">
@@ -110,7 +104,6 @@
             <div class="company-details-bar"></div>
 
             <div class="report-title-section">
-                <!-- Judul Laporan Baru -->
                 <h1>REKAPITULASI ALOKASI PEMBAYARAN</h1>
                 <p class="doc-number" id="lbl-doc-no">No. Form: --</p>
             </div>
@@ -119,14 +112,17 @@
                 <table class="sup-table">
                     <tr><td class="lbl">Nama Supplier</td><td class="val" id="lbl-supplier">: --</td></tr>
                     <tr><td class="lbl">Alamat / No. Telp</td><td class="val" id="lbl-alamat-telp">: --</td></tr>
-                    <tr><td class="lbl">Jumlah Bayar</td><td class="val" id="lbl-total-bayar" style="color: #dc2626;">: Rp 0</td></tr>
+                    <tr><td class="lbl">Jumlah Bayar</td><td class="val" id="lbl-total-bayar" style="color: #dc2626; font-size: 15px;">: Rp 0</td></tr>
                 </table>
             </div>
 
+            <!-- CONTAINER RINGKASAN ALOKASI -->
+            <div id="alokasi-summary-container"></div>
+
+            <!-- CONTAINER BLOK NOTA -->
             <div id="dynamic-nota-list"></div>
 
-            <!-- Box Summary Terpisah (Ambil murni dari URL Parameter) -->
-            
+            <!-- AREA TANDA TANGAN -->
             <div class="signatures-container">
                 <div class="sig-col"><p>Diverifikasi Oleh (Admin),</p><div class="sig-space-blank"></div><div class="sig-name" id="name-admin-footer">Admin Keuangan</div></div>
                 <div class="sig-col"><p>Pihak Penerima (Supplier),</p><div class="sig-space-blank"></div><div class="sig-name" id="name-supplier-footer">Supplier</div></div>
@@ -146,31 +142,12 @@
             return "Rp " + parseFloat(angka).toLocaleString('id-ID'); 
         }
 
-        function hitungTerbilang(nilai) {
-            const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
-            function penyebut(n) {
-                n = Math.floor(n); if (n < 0) return ""; if (n < 12) return huruf[n];
-                if (n < 20) return penyebut(n - 10) + " belas";
-                if (n < 100) return penyebut(Math.floor(n / 10)) + " puluh " + penyebut(n % 10);
-                if (n < 200) return "seratus " + penyebut(n - 100);
-                if (n < 1000) return penyebut(Math.floor(n / 100)) + " ratus " + penyebut(n % 100);
-                if (n < 2000) return "seribu " + penyebut(n - 1000);
-                if (n < 1000000) return penyebut(Math.floor(n / 1000)) + " ribu " + penyebut(n % 1000);
-                if (n < 1000000000) return penyebut(Math.floor(n / 1000000)) + " juta " + penyebut(n % 1000000);
-                return "";
-            }
-            if (nilai === 0) return "nol";
-            return penyebut(nilai).replace(/\s+/g, ' ').trim();
-        }
-
         const docNoGenerated = p.get("no") || "SPLIT-" + Date.now().toString().slice(-6);
 
         window.addEventListener('DOMContentLoaded', () => {
             // DEKLARASI PARAMETER UTAMA
             const sName = p.get("customer") || "-";
-            const paramBruto = Number(p.get("bruto")) || 0;
             const paramBayar = Number(p.get("bayar")) || 0;
-            const paramGrand = Number(p.get("grand")) || 0;
 
             // HEADER INFO
             document.getElementById('lbl-supplier').innerText = ": " + sName;
@@ -192,6 +169,44 @@
                 let arrDetail = detailParam.split(",").map(x => x.trim());
                 let arrBayar  = bayarParam.split(",").map(x => x.trim());
 
+                // --- 1. SCRIPT UNTUK BLOK RINGKASAN ALOKASI ---
+                let htmlLunas = "";
+                let htmlSisa = "";
+
+                arrNota.forEach((rowNota) => {
+                    if(!rowNota) return;
+                    let col = rowNota.split("|");
+                    let noPO = col[0];
+                    let sisa = Number(col[3]) || 0;
+
+                    if (sisa === 0) {
+                        htmlLunas += `<li style="margin-bottom: 4px;">PO: <strong>${noPO}</strong> - <span style="color:#166534; font-weight:600;">LUNAS</span></li>`;
+                    } else if (sisa > 0) {
+                        htmlSisa += `<li style="margin-bottom: 4px;">Sisa pembayaran masuk ke nota <strong>${noPO}</strong></li>`;
+                    } else if (sisa < 0) {
+                        htmlSisa += `<li style="margin-bottom: 4px;">Kelebihan dana dari nota <strong>${noPO}</strong> masuk sebagai <span style="color:#0369a1; font-weight:600;">DEPOSIT</span></li>`;
+                    }
+                });
+
+                document.getElementById('alokasi-summary-container').innerHTML = `
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 25px;">
+                        <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+                            ALOKASI PEMBAYARAN NOTA LUNAS:
+                        </div>
+                        <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 13px; color: #475569;">
+                            ${htmlLunas || '<li><i>Tidak ada nota yang lunas penuh</i></li>'}
+                        </ul>
+
+                        <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+                            ALOKASI SISA (BAYAR SEBAGIAN):
+                        </div>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #475569;">
+                            ${htmlSisa || '<li><i>Tidak ada alokasi sisa pembayaran</i></li>'}
+                        </ul>
+                    </div>
+                `;
+
+                // --- 2. SCRIPT UNTUK BLOK NOTA DETAIL ---
                 arrNota.forEach((rowNota, idx) => {
                     if(!rowNota) return;
                     let colNota   = rowNota.split("|");
@@ -200,7 +215,7 @@
                     let totalBeli = Number(colNota[2]) || 0;
                     let sisaNota  = Number(colNota[3]) || 0;
 
-                    // 1. Ambil Barang Khusus Nota Ini
+                    // Detail Barang
                     let tbodyBarangHtml = "";
                     arrDetail.forEach(rowDetail => {
                         if(!rowDetail) return;
@@ -222,7 +237,7 @@
                         }
                     });
 
-                    // 2. Ambil Riwayat Cicilan Khusus Nota Ini
+                    // Riwayat Pembayaran
                     let tbodyBayarHtml = "";
                     arrBayar.forEach(rowBayar => {
                         if(!rowBayar) return;
@@ -252,7 +267,7 @@
                         tbodyBayarHtml = `<tr><td colspan="4" style="text-align:center; font-style:italic; color:#9ca3af;">Tidak ada riwayat alokasi bayar khusus nota ini</td></tr>`;
                     }
 
-                    // 3. Logika Tampilan Footer (Lunas / Cicil / Kelebihan)
+                    // Logika Tampilan Footer (Lunas / Cicil / Kelebihan)
                     let statusFooterText = "";
                     let statusFooterColor = "#dc2626"; // Default merah (belum lunas)
                     let statusFooterValue = "";
@@ -270,7 +285,7 @@
                         statusFooterValue = formatRupiah(sisaNota);
                     }
 
-                    // 4. Masukkan ke Container
+                    // Masukkan ke Container Detail
                     container.innerHTML += `
                         <div class="nota-item-card">
                             <div class="card-head"><span>[${idx+1}] NOTA PEMBELIAN: ${noNota}</span><span>Tgl: ${tglNota}</span></div>
@@ -294,7 +309,6 @@
                 });
             }
 
-            // SUMMARY BAWAH (Dieksekusi menggunakan angka dari Parameter)
             // TRIGGER SWAL
             setTimeout(() => {
                 Swal.fire({
@@ -325,13 +339,12 @@
             const elementDoc = document.getElementById('nota-rekap-container');
             const sName = p.get("customer") || "SUPPLIER";
             const namaFile = `REKAP_ALOKASI_${sName.replace(/\s+/g, '_')}_${docNoGenerated}`;
-            const grandParam = Number(p.get("grand")) || 0;
+            // Mengambil Grand dari parameter jika ada, atau mengambil dari kalkulasi sistem sisa hutang jika diperlukan di masa depan. Di sini kita biarkan kosong di pesan teks agar aman, atau Anda bisa sesuaikan kembali.
 
             let teksWA = `*REKAP ALOKASI PEMBAYARAN - BCMS*\n`;
             teksWA += `----------------------------------------\n`;
             teksWA += `No Dokumen : ${docNoGenerated}\n`;
             teksWA += `Supplier   : ${sName}\n`;
-            teksWA += `Sisa Utang : Rp ${grandParam.toLocaleString("id-ID")}\n`;
             teksWA += `----------------------------------------\n`;
             teksWA += `Silakan periksa lampiran file ${formatType} yang saya kirimkan.`;
             
