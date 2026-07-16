@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Cetak & Rekap Konsolidasi - NDTECH Ecosystem</title>
+    <title>Sistem Cetak Split Payment - NDTECH Ecosystem</title>
     
     <!-- Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -47,15 +47,13 @@
         .nota-item-card { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .card-head { background: #f1f5f9; padding: 12px 16px; display: flex; justify-content: space-between; font-weight: 600; font-size: 12.5px; color: #334155; border-bottom: 1px solid #e2e8f0; }
         
-        /* Tabel Pembelian */
+        /* Tabel Pembelian & Log */
         .item-table { width: 100%; border-collapse: collapse; }
         .item-table th { background: #f8fafc; color: #475569; font-weight: 500; font-size: 11px; text-align: left; padding: 10px 16px; border-bottom: 1px solid #e2e8f0; }
         .item-table td { padding: 10px 16px; font-size: 12px; color: #334155; border-bottom: 1px solid #f1f5f9; }
-        
         .text-right-nominal { text-align: right; white-space: nowrap !important; font-size: 11.5px !important; font-weight: 600; }
         .total-pembelian-row { background: #ffffff; padding: 10px 16px; text-align: right; font-weight: 600; font-size: 12.5px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
 
-        /* Log Section (Pembayaran) */
         .payment-log-section { padding: 16px; background: #fafafa; }
         .log-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px; }
         .log-table { width: 100%; border-collapse: collapse; }
@@ -116,10 +114,10 @@
                 </table>
             </div>
 
-            <!-- CONTAINER RINGKASAN ALOKASI -->
+            <!-- CONTAINER RINGKASAN ALOKASI DINAMIS -->
             <div id="alokasi-summary-container"></div>
 
-            <!-- CONTAINER BLOK NOTA -->
+            <!-- CONTAINER BLOK NOTA DETAIL -->
             <div id="dynamic-nota-list"></div>
 
             <!-- AREA TANDA TANGAN -->
@@ -145,11 +143,14 @@
         const docNoGenerated = p.get("no") || "SPLIT-" + Date.now().toString().slice(-6);
 
         window.addEventListener('DOMContentLoaded', () => {
-            // DEKLARASI PARAMETER UTAMA
+            // 1. DEKLARASI PARAMETER UTAMA
             const sName = p.get("customer") || "-";
             const paramBayar = Number(p.get("bayar")) || 0;
+            const statusSplit = p.get("jenis") || ""; 
+            const totalLunas = Number(p.get("bayarlunas")) || 0;
+            const nominalLebihan = Number(p.get("lebihan")) || 0;
 
-            // HEADER INFO
+            // 2. HEADER INFO
             document.getElementById('lbl-supplier').innerText = ": " + sName;
             document.getElementById('lbl-alamat-telp').innerText = `: ${p.get("alamat") || "-"} (${p.get("telp") || ""})`;
             document.getElementById('lbl-doc-no').innerText = "No. Form: " + docNoGenerated;
@@ -158,55 +159,46 @@
             document.getElementById('name-supplier-footer').innerText = sName;
             document.getElementById('lbl-total-bayar').innerText = ": " + formatRupiah(paramBayar);
 
-            // DATA LIST PARSING
-            let notaParam   = p.get("nota_list") || "";
+            // 3. LOGIKA KOTAK RINGKASAN STATUS
+            let htmlRingkasan = "";
+            if (statusSplit === "BAYAR SEMUA TAGIHAN") {
+                htmlRingkasan = `
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                        <p style="margin:0; font-weight:700; color: #166534; font-size: 13px;">STATUS: PEMBAYARAN LUNAS</p>
+                        <p style="margin:5px 0 0 0; font-size: 12.5px; color: #15803d;">Seluruh tagihan sebesar <strong>${formatRupiah(totalLunas)}</strong> telah diselesaikan.</p>
+                    </div>`;
+            } else if (statusSplit === "BAYAR SEBAGIAN") {
+                htmlRingkasan = `
+                    <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                        <p style="margin:0; font-weight:700; color: #92400e; font-size: 13px;">STATUS: PEMBAYARAN TERMIN (SEBAGIAN)</p>
+                        <p style="margin:5px 0 0 0; font-size: 12.5px; color: #b45309;">Pembayaran sebesar <strong>${formatRupiah(totalLunas)}</strong> digunakan untuk pelunasan, dan sisanya dialokasikan ke nota berjalan.</p>
+                    </div>`;
+            } else if (statusSplit === "BAYAR LEBIH BESAR TAGIHAN" || statusSplit.toUpperCase().includes("LEBIH")) {
+                htmlRingkasan = `
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                        <p style="margin:0; font-weight:700; color: #1e40af; font-size: 13px;">STATUS: PEMBAYARAN DENGAN DEPOSIT</p>
+                        <p style="margin:5px 0 0 0; font-size: 12.5px; color: #1d4ed8;">Total bayar melampaui tagihan. Kelebihan dana sebesar <strong>${formatRupiah(nominalLebihan)}</strong> telah masuk sebagai <strong>DEPOSIT</strong>.</p>
+                    </div>`;
+            }
+            document.getElementById('alokasi-summary-container').innerHTML = htmlRingkasan;
+
+            // 4. PARSING DATA LIST
+            let strNotaLunas = p.get("nota_lunas") || "";
+            let strNotaTitip = p.get("nota_titip") || "";
             let detailParam = p.get("detail_nota") || "";
             let bayarParam  = p.get("bayar_list") || "";
             let container   = document.getElementById('dynamic-nota-list');
 
-            if (notaParam) {
-                let arrNota   = notaParam.split(",").map(x => x.trim());
-                let arrDetail = detailParam.split(",").map(x => x.trim());
-                let arrBayar  = bayarParam.split(",").map(x => x.trim());
+            let arrNotaLunas = strNotaLunas ? strNotaLunas.split(",") : [];
+            let arrNotaTitip = strNotaTitip ? strNotaTitip.split(",") : [];
+            
+            // Gabungkan Nota Lunas dan Nota Titip untuk di-loop bersamaan
+            let arrNota = [...arrNotaLunas, ...arrNotaTitip].map(x => x.trim()).filter(x => x !== "");
+            let arrDetail = detailParam.split(",").map(x => x.trim());
+            let arrBayar  = bayarParam.split(",").map(x => x.trim());
 
-                // --- 1. SCRIPT UNTUK BLOK RINGKASAN ALOKASI ---
-                let htmlLunas = "";
-                let htmlSisa = "";
-
-                arrNota.forEach((rowNota) => {
-                    if(!rowNota) return;
-                    let col = rowNota.split("|");
-                    let noPO = col[0];
-                    let sisa = Number(col[3]) || 0;
-
-                    if (sisa === 0) {
-                        htmlLunas += `<li style="margin-bottom: 4px;">PO: <strong>${noPO}</strong> - <span style="color:#166534; font-weight:600;">LUNAS</span></li>`;
-                    } else if (sisa > 0) {
-                        htmlSisa += `<li style="margin-bottom: 4px;">Sisa pembayaran masuk ke nota <strong>${noPO}</strong></li>`;
-                    } else if (sisa < 0) {
-                        htmlSisa += `<li style="margin-bottom: 4px;">Kelebihan dana dari nota <strong>${noPO}</strong> masuk sebagai <span style="color:#0369a1; font-weight:600;">DEPOSIT</span></li>`;
-                    }
-                });
-
-                document.getElementById('alokasi-summary-container').innerHTML = `
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 25px;">
-                        <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
-                            ALOKASI PEMBAYARAN NOTA LUNAS:
-                        </div>
-                        <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 13px; color: #475569;">
-                            ${htmlLunas || '<li><i>Tidak ada nota yang lunas penuh</i></li>'}
-                        </ul>
-
-                        <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
-                            ALOKASI SISA (BAYAR SEBAGIAN):
-                        </div>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #475569;">
-                            ${htmlSisa || '<li><i>Tidak ada alokasi sisa pembayaran</i></li>'}
-                        </ul>
-                    </div>
-                `;
-
-                // --- 2. SCRIPT UNTUK BLOK NOTA DETAIL ---
+            if (arrNota.length > 0) {
+                // Loop untuk membuat Blok Nota
                 arrNota.forEach((rowNota, idx) => {
                     if(!rowNota) return;
                     let colNota   = rowNota.split("|");
@@ -267,9 +259,9 @@
                         tbodyBayarHtml = `<tr><td colspan="4" style="text-align:center; font-style:italic; color:#9ca3af;">Tidak ada riwayat alokasi bayar khusus nota ini</td></tr>`;
                     }
 
-                    // Logika Tampilan Footer (Lunas / Cicil / Kelebihan)
+                    // Logika Tampilan Footer Nota (Lunas / Cicil / Kelebihan)
                     let statusFooterText = "";
-                    let statusFooterColor = "#dc2626"; // Default merah (belum lunas)
+                    let statusFooterColor = "#dc2626"; 
                     let statusFooterValue = "";
 
                     if (sisaNota === 0) {
@@ -285,7 +277,7 @@
                         statusFooterValue = formatRupiah(sisaNota);
                     }
 
-                    // Masukkan ke Container Detail
+                    // Render ke Container
                     container.innerHTML += `
                         <div class="nota-item-card">
                             <div class="card-head"><span>[${idx+1}] NOTA PEMBELIAN: ${noNota}</span><span>Tgl: ${tglNota}</span></div>
@@ -307,9 +299,11 @@
                         </div>
                     `;
                 });
+            } else {
+                container.innerHTML = `<div style="text-align:center; color:#94a3b8; padding: 20px;">Tidak ada rincian alokasi nota.</div>`;
             }
 
-            // TRIGGER SWAL
+            // 5. TRIGGER SWAL
             setTimeout(() => {
                 Swal.fire({
                     title: 'DOCUMENT SIAP !',
@@ -338,13 +332,17 @@
 
             const elementDoc = document.getElementById('nota-rekap-container');
             const sName = p.get("customer") || "SUPPLIER";
-            const namaFile = `REKAP_ALOKASI_${sName.replace(/\s+/g, '_')}_${docNoGenerated}`;
-            // Mengambil Grand dari parameter jika ada, atau mengambil dari kalkulasi sistem sisa hutang jika diperlukan di masa depan. Di sini kita biarkan kosong di pesan teks agar aman, atau Anda bisa sesuaikan kembali.
+            const namaFile = `SPLIT_BAYAR_${sName.replace(/\s+/g, '_')}_${docNoGenerated}`;
+            
+            const paramBayar = Number(p.get("bayar")) || 0;
+            const statusSplit = p.get("jenis") || "ALOKASI PEMBAYARAN";
 
             let teksWA = `*REKAP ALOKASI PEMBAYARAN - BCMS*\n`;
             teksWA += `----------------------------------------\n`;
             teksWA += `No Dokumen : ${docNoGenerated}\n`;
             teksWA += `Supplier   : ${sName}\n`;
+            teksWA += `Status     : ${statusSplit}\n`;
+            teksWA += `Total Bayar: Rp ${paramBayar.toLocaleString("id-ID")}\n`;
             teksWA += `----------------------------------------\n`;
             teksWA += `Silakan periksa lampiran file ${formatType} yang saya kirimkan.`;
             
