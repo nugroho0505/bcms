@@ -349,14 +349,22 @@
             const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
 
             if (formatType === "JPEG") {
-                html2canvas(elementDoc, { scale: 2, useCORS: true, logging: false, width: 800 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = namaFile + '.jpeg';
-                    link.href = canvas.toDataURL('image/jpeg', 0.95);
-                    link.click();
-                    setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
-                });
-            } else if (formatType === "PDF") {
+                // KODE BARU
+html2canvas(elementDoc, { 
+    scale: 2, 
+    useCORS: true, 
+    logging: false, 
+    width: 800,
+    scrollY: -window.scrollY, // Mengatasi offset jika halaman sedang di-scroll
+    windowHeight: elementDoc.scrollHeight // Memaksa render seluruh tinggi dokumen
+}).then(canvas => {
+    const link = document.createElement('a');
+    link.download = namaFile + '.jpeg';
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.click();
+    setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
+});            } 
+            else if (formatType === "PDF") {
                 const opsiSetting = {
                     margin:       [8, 8, 8, 8],
                     filename:     namaFile + '.pdf',
