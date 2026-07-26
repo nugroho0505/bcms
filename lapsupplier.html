@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Pembelian Supplier - NDTECH Ecosystem</title>
+    <!-- html2pdf bundle sudah termasuk jsPDF dan html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- DESIGN PREMIUM MINIMALIS NDTECH --- */
+        :root { --bg-app: #121214; --text-main: #f3f4f6; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-app); color: var(--text-main);
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .document-wrapper { margin-top: 20px; margin-bottom: 50px; padding: 10px; width: 100%; max-width: 800px; box-sizing: border-box; }
+        .printable-content { background: #ffffff; color: #1a202c; padding: 40px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); position: relative; box-sizing: border-box; width: 100%; }
+        
+        /* Kop Sejajar */
+        .invoice-kop-container { display: flex; justify-content: space-between; align-items: center; width: 100%; padding-bottom: 5px; }
+        .kop-logo-wrapper { width: 25%; display: flex; justify-content: flex-start; align-items: center; }
+        .kop-logo-wrapper img { max-width: 120px; height: auto; }
+        .kop-text-wrapper { width: 73%; text-align: right; display: flex; flex-direction: column; gap: 2px; }
+        .kop-text-wrapper h2 { margin: 0 0 4px 0; font-size: 20px; font-weight: 700; color: #111827; letter-spacing: -0.5px; }
+        .kop-text-wrapper p { margin: 0; font-size: 11px; color: #4b5563; line-height: 1.4; font-weight: 500; }
+        .company-details-bar { border-bottom: 2px solid #000; margin-top: 12px; margin-bottom: 25px; width: 100%; height: 0; }
+
+        .report-title-section { text-align: center; margin-bottom: 25px; }
+        .report-title-section h1 { margin: 0; font-size: 19px; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px; }
+        .report-title-section p.doc-number { margin: 5px 0 0 0; font-size: 13px; color: #0f172a; font-weight: 600; }
+
+        .supplier-header-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; margin-bottom: 25px; }
+        .sup-table { width: 100%; border-collapse: collapse; }
+        .sup-table td { padding: 4px 0; font-size: 13px; vertical-align: top; }
+        .sup-table td.lbl { color: #64748b; width: 18%; }
+        .sup-table td.val { color: #0f172a; font-weight: 600; }
+
+        /* Card Nota Blok */
+        .nota-item-card { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card-head { background: #f1f5f9; padding: 12px 16px; display: flex; justify-content: space-between; font-weight: 600; font-size: 12.5px; color: #334155; border-bottom: 1px solid #e2e8f0; }
+        
+        .item-table { width: 100%; border-collapse: collapse; }
+        .item-table th { background: #f8fafc; color: #475569; font-weight: 500; font-size: 11px; text-align: left; padding: 10px 16px; border-bottom: 1px solid #e2e8f0; }
+        .item-table td { padding: 10px 16px; font-size: 12px; color: #334155; border-bottom: 1px solid #f1f5f9; }
+        
+        .text-right-nominal { text-align: right; white-space: nowrap !important; font-size: 11.5px !important; font-weight: 600; }
+        .total-pembelian-row { background: #ffffff; padding: 10px 16px; text-align: right; font-weight: 600; font-size: 12.5px; border-bottom: 1px dashed #e2e8f0; color: #0f172a; }
+
+        /* Log Section */
+        .payment-log-section { padding: 16px; background: #ffffff; }
+        .log-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .log-table { width: 100%; border-collapse: collapse; }
+        .log-table th { font-size: 11px; color: #64748b; padding: 6px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .log-table td { padding: 8px 12px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-deposit { background: #e0f2fe; color: #0369a1; }
+        .badge-transfer { background: #f3e8ff; color: #6b21a8; } 
+        .badge-cash { background: #fef3c7; color: #92400e; }
+        .card-foot { background: #f8fafc; padding: 12px 16px; text-align: right; font-weight: 600; font-size: 13px; border-top: 1px solid #e2e8f0; color: #0284c7; }
+
+        .summary-box-grand { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 20px; margin-top: 25px; }
+        .smr-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: #475569; font-size: 13px; }
+        .smr-row.grand-total { margin-top: 12px; padding-top: 12px; border-top: 1px solid #7dd3fc; font-size: 16px; font-weight: 700; color: #0369a1; }
+        .spelled-out-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #7dd3fc; font-size: 12px; color: #4b5563; font-style: italic; font-weight: 500; text-align: left; }
+
+        .signatures-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; text-align: center; }
+        .sig-col p { margin: 0; font-size: 12px; color: #64748b; }
+        .sig-space-blank { height: 70px; } 
+        .sig-name { font-weight: 600; font-size: 13px; color: #1e293b; border-top: 1px solid #cbd5e1; padding-top: 6px; display: inline-block; min-width: 160px; }
+        .document-footer-note { margin-top: 35px; border-top: 1px dashed #cbd5e1; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; }
+        
+        @media print {
+            body { background: #fff; margin: 0; }
+            .document-wrapper { max-width: 100%; margin: 0; padding: 0; }
+            .printable-content { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        <div class="printable-content" id="nota-rekap-container">
+            
+            <div class="invoice-kop-container">
+                <div class="kop-logo-wrapper">
+                    <img src="logobcms.png" alt="Logo BCMS">
+                </div>
+                <div class="kop-text-wrapper">
+                    <h2>BERKAH CRISTAL MANIS SEJAHTERA</h2>
+                    <p>Dusun blanakan rt/rw 003/002, Desa Wonodadi - Kec Buayan</p>
+                    <p>Kab KEBUMEN - Kode pos 54474</p>
+                    <p>Telp : 0813 3639 8800, 0812 33759743</p>
+                </div>
+            </div>
+
+            <div class="company-details-bar"></div>
+
+            <div class="report-title-section">
+                <h1>Laporan Pembelian Supplier</h1>
+                <p class="doc-number" id="lbl-doc-no">No. Dokumen: --</p>
+            </div>
+
+            <div class="supplier-header-box">
+                <table class="sup-table">
+                    <tr><td class="lbl">Nama Supplier</td><td class="val" id="lbl-supplier">: --</td></tr>
+                    <tr><td class="lbl">Alamat / No. Telp</td><td class="val" id="lbl-alamat-telp">: --</td></tr>
+                </table>
+            </div>
+
+            <div id="dynamic-nota-list"></div>
+
+            <div class="summary-box-grand">
+                <div class="smr-row"><span>Total Nilai Pembelian</span><span id="grand-bruto" class="text-right-nominal">Rp 0</span></div>
+                <div class="smr-row"><span>Total Pembayaran (Termasuk Deposit)</span><span id="grand-bayar" class="text-right-nominal">- Rp 0</span></div>
+                <div class="smr-row grand-total"><span>SISA TAGIHAN PEMBELIAN</span><span id="grand-netto" class="text-right-nominal">Rp 0</span></div>
+                <div class="spelled-out-box" id="lbl-terbilang">Terbilang: * Menghitung nominal... *</div>
+            </div>
+
+            <div class="signatures-container">
+                <div class="sig-col"><p>Diverifikasi Oleh (Admin),</p><div class="sig-space-blank"></div><div class="sig-name" id="name-admin-footer">Admin Keuangan</div></div>
+                <div class="sig-col"><p>Pihak Penerima (Supplier),</p><div class="sig-space-blank"></div><div class="sig-name" id="name-supplier-footer">Supplier</div></div>
+            </div>
+
+            <div class="document-footer-note">
+                <span>* Dokumen laporan pembelian otomatis dari sistem database internal BCMS.</span>
+                <span id="lbl-tgl-cetak">Tgl Cetak: --</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const p = new URLSearchParams(window.location.search);
+        function formatRupiah(angka) { return "Rp " + parseFloat(angka).toLocaleString('id-ID'); }
+
+        function hitungTerbilang(nilai) {
+            const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+            function penyebut(n) {
+                n = Math.floor(n); if (n < 0) return ""; if (n < 12) return huruf[n];
+                if (n < 20) return penyebut(n - 10) + " belas";
+                if (n < 100) return penyebut(Math.floor(n / 10)) + " puluh " + penyebut(n % 10);
+                if (n < 200) return "seratus " + penyebut(n - 100);
+                if (n < 1000) return penyebut(Math.floor(n / 100)) + " ratus " + penyebut(n % 100);
+                if (n < 2000) return "seribu " + penyebut(n - 1000);
+                if (n < 1000000) return penyebut(Math.floor(n / 1000)) + " ribu " + penyebut(n % 1000);
+                if (n < 1000000000) return penyebut(Math.floor(n / 1000000)) + " juta " + penyebut(n % 1000000);
+                return "";
+            }
+            if (nilai === 0) return "nol";
+            return penyebut(nilai).replace(/\s+/g, ' ').trim();
+        }
+
+        const docNoGenerated = p.get("no") || "PB-" + Date.now().toString().slice(-6);
+        const tglCetakParam = p.get("tanggal") || new Date().toLocaleDateString('id-ID');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Header Supplier
+            const sName = p.get("customer") || "-";
+            document.getElementById('lbl-supplier').innerText = ": " + sName;
+            document.getElementById('lbl-alamat-telp').innerText = `: ${p.get("alamat") || "-"} (${p.get("telp") || ""})`;
+            document.getElementById('lbl-doc-no').innerText = "No. Dokumen: " + docNoGenerated;
+            document.getElementById('lbl-tgl-cetak').innerText = "Tgl Cetak: " + tglCetakParam;
+            document.getElementById('name-admin-footer').innerText = p.get("admin") || "Admin Keuangan";
+            document.getElementById('name-supplier-footer').innerText = sName;
+            
+            // PARSING DATA PARAMETER
+            let notaParam   = p.get("nota_list") || "";
+            let detailParam = p.get("detail_nota") || "";
+            let bayarParam  = p.get("bayar_list") || "";
+            
+            let container = document.getElementById('dynamic-nota-list');
+            let tBruto = 0; let tBayar = 0; let tNetto = 0;
+
+            if (notaParam) {
+                let arrNota   = notaParam.split(",").map(x => x.trim());
+                let arrDetail = detailParam.split(",").map(x => x.trim());
+                let arrBayar  = bayarParam.split(",").map(x => x.trim());
+
+                arrNota.forEach((rowNota, idx) => {
+                    if(!rowNota) return;
+                    let colNota   = rowNota.split("|");
+                    let noNota    = colNota[0] || "";
+                    let tglNota   = colNota[1] || "";
+                    let totalBeli = Number(colNota[2]) || 0;
+                    let sisaNota  = Number(colNota[3]) || 0;
+                    
+                    tNetto += sisaNota;
+
+                    // Looping Detail Barang
+                    let tbodyBarangHtml = "";
+                    arrDetail.forEach(rowDetail => {
+                        if(!rowDetail) return;
+                        let colDetail = rowDetail.split("|");
+                        let refNoNota = colDetail[0] || "";
+                        if (refNoNota === noNota) {
+                            let kode   = colDetail[1] || "-";
+                            let nama   = colDetail[2] || "";
+                            let qty    = colDetail[3] || "0";
+                            let harga  = Number(colDetail[4]) || 0;
+                            let total  = Number(colDetail[5]) || 0;
+                            tBruto += total;
+
+                            tbodyBarangHtml += `<tr>
+                                <td>[${kode}] ${nama}</td>
+                                <td class="text-left-nominal">${qty}</td>
+                                <td class="text-left-nominal">${formatRupiah(harga)}</td>
+                                <td class="text-right-nominal">${formatRupiah(total)}</td>
+                            </tr>`;
+                        }
+                    });
+
+                    // Looping Riwayat Pembayaran
+                    let tbodyBayarHtml = "";
+                    arrBayar.forEach(rowBayar => {
+                        if(!rowBayar) return;
+                        let colBayar  = rowBayar.split("|");
+                        let refNoNota = colBayar[0] || "";
+                        if (refNoNota === noNota) {
+                            let tgl   = colBayar[1] || "";
+                            let jenis = colBayar[2] || "";
+                            let ket   = colBayar[3] || "-";
+                            let jml   = Number(colBayar[4]) || 0;
+                            tBayar += jml;
+
+                            let bCls = "badge-cash";
+                            if(jenis.toUpperCase().includes("DEPOSIT")) bCls = "badge-deposit";
+                            if(jenis.toUpperCase().includes("TRANSFER")) bCls = "badge-transfer";
+
+                            tbodyBayarHtml += `<tr>
+                                <td>${tgl}</td>
+                                <td><span class="badge ${bCls}">${jenis}</span></td>
+                                <td>${ket}</td>
+                                <td class="text-right-nominal">- ${formatRupiah(jml)}</td>
+                            </tr>`;
+                        }
+                    });
+
+                    if(!tbodyBayarHtml) tbodyBayarHtml = `<tr><td colspan="4" style="text-align:center; font-style:italic; color:#9ca3af;">Tidak ada riwayat angsuran khusus nota ini</td></tr>`;
+
+                    // Tambahkan ke Container Utama Dokumen
+                    container.innerHTML += `
+                        <div class="nota-item-card">
+                            <div class="card-head"><span>[${idx+1}] NOTA PEMBELIAN: ${noNota}</span><span>Tgl: ${tglNota}</span></div>
+                            <table class="item-table">
+                                <thead><tr><th>Deskripsi Barang / Jasa</th><th class="text-left">Qty</th><th class="text-left">Harga</th><th class="text-right">Sub Total</th></tr></thead>
+                                <tbody>${tbodyBarangHtml}</tbody>
+                            </table>
+                            <div class="total-pembelian-row">Total Nilai Pembelian: <span class="text-right-nominal">${formatRupiah(totalBeli)}</span></div>
+                            <div class="payment-log-section">
+                                <div class="log-title">Riwayat Pembayaran:</div>
+                                <table class="log-table">
+                                    <thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan</th><th class="text-right-nominal">Nominal</th></tr></thead>
+                                    <tbody>${tbodyBayarHtml}</tbody>
+                                </table>
+                            </div>
+                            <div class="card-foot">Sisa Tagihan Nota ${noNota}: <span class="text-right-nominal">${formatRupiah(sisaNota)}</span></div>
+                        </div>
+                    `;
+                });
+            }
+
+            const paramBruto = Number(p.get("bruto")) || 0;
+            const paramBayar = Number(p.get("bayar")) || 0;
+            const paramGrand = Number(p.get("grand")) || 0;
+
+            document.getElementById('grand-bruto').innerText = formatRupiah(paramBruto);
+            document.getElementById('grand-bayar').innerText = "- " + formatRupiah(paramBayar);
+            document.getElementById('grand-netto').innerText = formatRupiah(paramGrand);
+            document.getElementById('lbl-terbilang').innerHTML = "Terbilang: * " + hitungTerbilang(paramGrand) + " rupiah *";
+            
+            // Hanya menampilkan Opsi PDF
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'LAPORAN SIAP !',
+                    html: `Laporan Pembelian atas nama <b>${sName}</b> berhasil disiapkan.<br><br>
+                    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
+                        <button id="btn-opsi-pdf" class="swal2-styled" style="background-color: #8b5cf6; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
+                            <i class="fa fa-file-pdf"></i> Simpan File PDF
+                        </button>
+                        <button id="btn-opsi-close" class="swal2-styled" style="background-color: transparent; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #ef4444; border: 1px solid #ef4444; font-weight: bold; cursor: pointer;">
+                            Tutup
+                        </button>
+                    </div>`,
+                    icon: 'success', 
+                    showConfirmButton: false, 
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        const content = Swal.getHtmlContainer();
+                        content.querySelector('#btn-opsi-pdf').addEventListener('click', () => { pemicuDownloadPDF(); });
+                        content.querySelector('#btn-opsi-close').addEventListener('click', () => { Swal.close(); });
+                    }
+                });
+            }, 600);
+        });
+
+        // FUNGSI KHUSUS UNDUH PDF SAJA (Dengan Penamaan Dinamis)
+        function pemicuDownloadPDF() {
+            Swal.fire({
+                title: 'Menyimpan PDF...',
+                text: 'Dokumen sedang diproses, mohon tunggu.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const elementDoc = document.getElementById('nota-rekap-container');
+            const sName = p.get("customer") || "SUPPLIER";
+            const tanggalStr = document.getElementById('lbl-tgl-cetak').innerText.replace("Tgl Cetak: ", "").replace(/\//g, '-');
+            
+            // Format Nama File Dinamis: LAPORAN_PEMBELIAN_NamaSupplier_Tanggal_NoDokumen
+            const namaFile = `LAPORAN_PEMBELIAN_${sName.replace(/\s+/g, '_')}_${tanggalStr}_${docNoGenerated}`;
+
+            const opsiSetting = {
+                margin:       [8, 8, 8, 8],
+                filename:     namaFile + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, width: 800 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opsiSetting).from(elementDoc).save().then(() => {
+                setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil Disimpan',
+                        text: `File ${namaFile}.pdf berhasil diunduh ke perangkat Anda.`,
+                        confirmButtonText: 'Tutup',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }, 800);
+            }).catch(err => {
+                Swal.fire('Gagal Menyimpan', err.toString(), 'error');
+            });
+        }
+    </script>
+</body>
+</html>
