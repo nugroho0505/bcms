@@ -320,43 +320,44 @@
                 container.innerHTML = `<div style="text-align:center; color:#94a3b8; padding: 20px;">Tidak ada rincian alokasi nota.</div>`;
             }
 
-            // 5. TRIGGER SWAL
-setTimeout(() => {
-    Swal.fire({
-        title: 'DOCUMENT SIAP !',
-        html: `Dokumen atas nama <b>${sName}</b> berhasil dibuat<br>Silakan tentukan tindakan berikutnya:<br><br>
-        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center;">
-            <button id="btn-opsi-1" class="swal2-styled" style="background-color: #3b82f6; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fa fa-print" style="font-size: 16px;"></i> 1. Cetak Dokumen
-            </button>
-            <button id="btn-opsi-2" class="swal2-styled" style="background-color: #4b5563; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fa fa-share-alt" style="font-size: 16px;"></i> 2. Bagikan via Browser Bawaan
-            </button>
-            <button id="btn-opsi-3" class="swal2-styled" style="background-color: #10b981; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fa fa-image" style="font-size: 16px;"></i> 3. Kirim Gambar (JPEG) ke WA
-            </button>
-            <button id="btn-opsi-4" class="swal2-styled" style="background-color: #8b5cf6; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <i class="fa fa-file-pdf" style="font-size: 16px;"></i> 4. Kirim File PDF ke WA
-            </button>
-            <button id="btn-opsi-5" class="swal2-styled" style="background-color: transparent; width: 95%; margin: 0; padding: 12px 18px; border-radius: 8px; color: #ef4444; border: 1.5px solid #ef4444; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                5. Close
-            </button>
-        </div>`,
-        icon: 'success', 
-        showConfirmButton: false, 
-        allowOutsideClick: false,
-        width: '450px', // Membuat lebar box popup SweetAlert sedikit lebih lapang
-        didOpen: () => {
-            const content = Swal.getHtmlContainer();
-            content.querySelector('#btn-opsi-1').addEventListener('click', () => { Swal.close(); window.print(); });
-            content.querySelector('#btn-opsi-2').addEventListener('click', () => { if (navigator.share) { navigator.share({ title: 'Rekap Pembukuan BCMS', url: window.location.href }); } });
-            content.querySelector('#btn-opsi-3').addEventListener('click', () => { pemicuUploadCloud("JPEG"); });
-            content.querySelector('#btn-opsi-4').addEventListener('click', () => { pemicuUploadCloud("PDF"); });
-            content.querySelector('#btn-opsi-5').addEventListener('click', () => { Swal.close(); });
-        }
-    });
-}, 600);
-            
+            // 5. TRIGGER SWAL POPUP (DESAIN TOMBOL BESAR & ERGONIMIS)
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'DOCUMENT SIAP !',
+                    html: `Dokumen atas nama <b>${sName}</b> berhasil dibuat<br>Silakan tentukan tindakan berikutnya:<br><br>
+                    <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center;">
+                        <button id="btn-opsi-1" class="swal2-styled" style="background-color: #3b82f6; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa fa-print" style="font-size: 16px;"></i> 1. Cetak Dokumen
+                        </button>
+                        <button id="btn-opsi-2" class="swal2-styled" style="background-color: #4b5563; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa fa-share-alt" style="font-size: 16px;"></i> 2. Bagikan via Browser Bawaan
+                        </button>
+                        <button id="btn-opsi-3" class="swal2-styled" style="background-color: #10b981; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa fa-image" style="font-size: 16px;"></i> 3. Kirim Gambar (JPEG) ke WA
+                        </button>
+                        <button id="btn-opsi-4" class="swal2-styled" style="background-color: #8b5cf6; width: 95%; margin: 0; padding: 14px 18px; border-radius: 8px; color: #fff; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa fa-file-pdf" style="font-size: 16px;"></i> 4. Kirim File PDF ke WA
+                        </button>
+                        <button id="btn-opsi-5" class="swal2-styled" style="background-color: transparent; width: 95%; margin: 0; padding: 12px 18px; border-radius: 8px; color: #ef4444; border: 1.5px solid #ef4444; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            5. Close
+                        </button>
+                    </div>`,
+                    icon: 'success', 
+                    showConfirmButton: false, 
+                    allowOutsideClick: false,
+                    width: '450px',
+                    didOpen: () => {
+                        const content = Swal.getHtmlContainer();
+                        content.querySelector('#btn-opsi-1').addEventListener('click', () => { Swal.close(); window.print(); });
+                        content.querySelector('#btn-opsi-2').addEventListener('click', () => { if (navigator.share) { navigator.share({ title: 'Rekap Pembukuan BCMS', url: window.location.href }); } });
+                        content.querySelector('#btn-opsi-3').addEventListener('click', () => { pemicuUploadCloud("JPEG"); });
+                        content.querySelector('#btn-opsi-4').addEventListener('click', () => { pemicuUploadCloud("PDF"); });
+                        content.querySelector('#btn-opsi-5').addEventListener('click', () => { Swal.close(); });
+                    }
+                });
+            }, 600);
+        });
+
         // FUNGSI DOWNLOAD / SHARE (SUDAH DIPERBAIKI FULL)
         function pemicuUploadCloud(formatType) {
             Swal.fire({
@@ -435,7 +436,7 @@ setTimeout(() => {
                     Swal.fire('Error', err.toString(), 'error');
                 });
             }
-        } // <-- PENUTUP FUNGSI pemicuUploadCloud (DIBERIKAN DENGAN BENAR)
+        }
     </script>
 </body>
 </html>
