@@ -20,25 +20,25 @@
             margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
         .document-wrapper { 
-    margin-top: 20px; 
-    margin-bottom: 50px; 
-    padding: 10px; 
-    width: 100%; 
-    max-width: 800px; 
-    box-sizing: border-box; 
-    overflow-x: auto;
-}
+            margin-top: 20px; 
+            margin-bottom: 50px; 
+            padding: 10px; 
+            width: 100%; 
+            max-width: 800px; 
+            box-sizing: border-box; 
+            overflow-x: auto;
+        }
         .printable-content { 
-    background: #ffffff; 
-    color: #1a202c; 
-    padding: 40px; 
-    border-radius: 8px; 
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); 
-    position: relative; 
-    box-sizing: border-box; 
-    width: 800px !important; 
-    min-width: 800px !important;
-}
+            background: #ffffff; 
+            color: #1a202c; 
+            padding: 40px; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); 
+            position: relative; 
+            box-sizing: border-box; 
+            width: 800px !important; 
+            min-width: 800px !important;
+        }
         /* Kop Sejajar */
         .invoice-kop-container { display: flex; justify-content: space-between; align-items: center; width: 100%; padding-bottom: 5px; }
         .kop-logo-wrapper { width: 25%; display: flex; justify-content: flex-start; align-items: center; }
@@ -338,7 +338,7 @@
             }, 600);
         });
 
-        // FUNGSI DOWNLOAD / SHARE
+        // FUNGSI DOWNLOAD / SHARE (SUDAH DIPERBAIKI FULL)
         function pemicuUploadCloud(formatType) {
             Swal.fire({
                 title: 'Mengunduh ' + formatType + '...',
@@ -365,54 +365,58 @@
             
             const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksWA)}`;
 
+            // Reset scroll layar ke posisi 0 untuk mencegah offset gambar
+            window.scrollTo(0, 0);
+
             if (formatType === "JPEG") {
-    // 1. Scroll otomatis ke paling atas sebelum memotret
-    window.scrollTo(0, 0);
+                html2canvas(elementDoc, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false, 
+                    width: 800,
+                    windowWidth: 1200,
+                    windowHeight: elementDoc.scrollHeight, // Menjamin mengambil seluruh tinggi konten
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = namaFile + '.jpeg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.95);
+                    link.click();
+                    setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('Error', err.toString(), 'error');
+                });
+            } 
+            else if (formatType === "PDF") {
+                const opsiSetting = {
+                    margin:       [8, 8, 8, 8],
+                    filename:     namaFile + '.pdf',
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { 
+                        scale: 2, 
+                        useCORS: true, 
+                        logging: false, 
+                        width: 800, 
+                        windowWidth: 1200,
+                        windowHeight: elementDoc.scrollHeight,
+                        scrollX: 0,
+                        scrollY: 0 
+                    },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
 
-    html2canvas(elementDoc, { 
-        scale: 2, 
-        useCORS: true, 
-        logging: false, 
-        width: 800,
-        windowWidth: 1200, // Menimulasikan layar desktop lebar 1200px
-        scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0
-    }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = namaFile + '.jpeg';
-        link.href = canvas.toDataURL('image/jpeg', 0.95);
-        link.click();
-        setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
-    });
-} 
-else if (formatType === "PDF") {
-    window.scrollTo(0, 0);
-
-    const opsiSetting = {
-        margin:       [8, 8, 8, 8],
-        filename:     namaFile + '.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false, 
-            width: 800, 
-            windowWidth: 1200,
-            scrollX: 0,
-            scrollY: 0 
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opsiSetting).from(elementDoc).save().then(() => {
-        setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
-    }).catch(err => {
-        Swal.close();
-        Swal.fire('Error', err.toString(), 'error');
-    });
-}
+                html2pdf().set(opsiSetting).from(elementDoc).save().then(() => {
+                    setTimeout(() => { Swal.close(); window.open(urlWA, '_blank'); }, 800);
+                }).catch(err => {
+                    Swal.close();
+                    Swal.fire('Error', err.toString(), 'error');
+                });
+            }
+        } // <-- PENUTUP FUNGSI pemicuUploadCloud (DIBERIKAN DENGAN BENAR)
     </script>
 </body>
 </html>
