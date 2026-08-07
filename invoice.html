@@ -13,10 +13,9 @@ body{
     font-family: monospace;
     margin:10px;
     font-size:12px;
-    background: #f3f4f6; /* Latar belakang layar agar kontainer struk terlihat kontras */
+    background: #f3f4f6; 
 }
 
-/* 🎯 SINKRONISASI UKURAN: Menggunakan max-width agar pas di kertas A4 & tidak terpotong */
 .container{
     max-width: 800px;
     width: 100%;
@@ -40,13 +39,8 @@ body{
     box-sizing: border-box;
 }
 
-/* LOGO */
-.logo{
-    width:60px;
-    height:60px;
-}
+.logo{ width:60px; height:60px; }
 
-/* FAKTUR BOX */
 .faktur-box{
     border:2px solid #000;
     width:49%;
@@ -81,11 +75,8 @@ table{
 }
 
 table, th, td{ border:1px solid #000; }
-
 th{ background:#eee; }
-
 th, td{ padding:4px; }
-
 .right{ text-align:right; }
 
 #terbilang{
@@ -94,60 +85,63 @@ th, td{ padding:4px; }
     margin-top:5px;
 }
 
-/* Membuat tinggi box kiri otomatis sejajar penuh dengan isi box kanan */
-.footer-left{
-    width: 60%;
-    border:1px solid #000;
-    padding:8px;
-    box-sizing: border-box;
+/* 🎯 LAYOUT TENGAH: FLEX STRETCH AGAR TINGGI KETERANGAN & SUMMARY SAMA */
+.layout-tengah {
+    display: flex;
+    align-items: stretch;
+    gap: 5px;
+    margin-top: 5px;
 }
 
-.footer-right-container{
-    width: 38%;
+.box-keterangan {
+    flex: 1;
+    border: 1px solid #000;
+    padding: 8px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    justify-content: center;
 }
 
-.summary-box, .riwayat-box {
-    border:1px solid #000;
+.box-summary {
+    width: 40%;
+}
+
+.box-summary table {
+    height: 100%; 
+    margin-top: 0;
+}
+
+/* 🎯 RIWAYAT FULL WIDTH */
+.box-riwayat {
     width: 100%;
+    margin-top: 5px;
 }
-
-.riwayat-title {
-    font-weight: bold;
-    padding: 4px;
-    border-bottom: 1px solid #000;
-    background: #eee;
-}
+.riwayat-table th { background: #f5f5f5; font-weight: bold; }
 
 .sub-terbilang {
     font-size: 11px;
     font-style: italic;
-    padding: 4px;
-    border-top: 1px solid #000;
-    background: #fafafa;
+    margin-top: 2px;
+    color: #333;
 }
 
-.sign-box{
-    border:1px solid #000;
-    width:220px;
-    text-align:center;
-    padding:10px 5px;
-    box-sizing: border-box;
+.badge {
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    display: inline-block;
+    text-align: center;
 }
-
-.print-btn{ 
-    margin-bottom:10px; 
-    padding: 6px 12px;
-    background: #fff;
-    border: 1px solid #000;
-    cursor: pointer;
-}
+.badge-cash     { background-color: #10b981; } 
+.badge-transfer { background-color: #3b82f6; } 
+.badge-default  { background-color: #6b7280; } 
 
 @media print{
     .print-btn{ display:none; }
-    body{ margin:0; background: #fff; }
+    body{ margin:0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
     .container { border: none; max-width: 100%; }
 }
 </style>
@@ -158,10 +152,9 @@ th, td{ padding:4px; }
 <div class="container" id="faktur-area">
 
 <div class="flex">
-
     <div class="header-left">
         <div style="display:flex; align-items:center; gap:12px;">
-            <img class="logo" src="logobcms.png">
+            <img class="logo" src="logobcms.png" onerror="this.style.display='none'">
             <div style="font-size:20px; font-weight:bold; letter-spacing:1px;">
                 BERKAH CRISTAL MANIS SEJAHTERA
             </div>
@@ -219,61 +212,54 @@ th, td{ padding:4px; }
 
 <div id="terbilang">Terbilang : -</div>
 
-<div class="flex" style="margin-top:5px; align-items: stretch;">
-    
-    <div class="footer-left">
-        Keterangan :<br><br>
-        BRI 6691 0101 5718 506 a/n Yohanes purwanto
+<!-- 🎯 LAYOUT TENGAH: KETERANGAN DINAMIS SEJAJAR DENGAN SUMMARY -->
+<div class="layout-tengah">
+    <div class="box-keterangan" id="keterangan-box">
+        <!-- Konten Keterangan Dinamis akan diinject lewat JS -->
     </div>
 
-    <div class="footer-right-container">
-        
-        <div class="summary-box">
-            <table style="margin-top:0;">
-                <tr><td>Sub Total</td><td class="right" id="subtotal"></td></tr>
-                <tr><td>Diskon</td><td class="right">0</td></tr>
-                <tr><td>PPN</td><td class="right">0</td></tr>
-                <tr><td>Biaya</td><td class="right">0</td></tr>
-                <tr><td><b>Total</b></td><td class="right"><b id="grandTotal"></b></td></tr>
-            </table>
-        </div>
-
-        <div id="section-riwayat" class="riwayat-box" style="display:none;">
-            <div class="riwayat-title">Riwayat Pembayaran :</div>
-            <table style="margin-top:0; border:none;">
-                <thead>
-                    <tr>
-                        <th style="background:#f9f9f9;">Tgl Bayar</th>
-                        <th style="background:#f9f9f9;">Jenis</th>
-                        <th style="text-align:right; background:#f9f9f9;">Bayar</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-riwayat">
-                    </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" style="text-align:right; font-weight:bold;">Sisa :</td>
-                        <td class="right" style="font-weight:bold;" id="sisa-bayar"></td>
-                    </tr>
-                </tfoot>
-            </table>
-            <div id="terbilang-sisa" class="sub-terbilang"></div>
-        </div>
-
+    <div class="box-summary">
+        <table>
+            <tr><td>Sub Total</td><td class="right" id="subtotal"></td></tr>
+            <tr><td>Diskon</td><td class="right">0</td></tr>
+            <tr><td>PPN</td><td class="right">0</td></tr>
+            <tr><td>Biaya</td><td class="right">0</td></tr>
+            <tr><td><b>Total</b></td><td class="right"><b id="grandTotal"></b></td></tr>
+        </table>
     </div>
 </div>
 
-<!-- Bagian Bawah: Keterangan Pembayaran Transfer & 1 Tanda Tangan Admin -->
+<!-- 🎯 LAYOUT BAWAH: RIWAYAT FULL WIDTH -->
+<div class="box-riwayat" id="section-riwayat" style="display:none;">
+    <table class="riwayat-table">
+        <thead>
+            <tr>
+                <th colspan="4" style="background:#eee; text-align:left;">Riwayat Pembayaran :</th>
+            </tr>
+            <tr>
+                <th style="width: 20%; background:#f9f9f9;">Tgl Bayar</th>
+                <th style="width: 20%; background:#f9f9f9;">Jenis</th>
+                <th style="width: 60%; text-align:right; background:#f9f9f9;">Bayar</th>
+            </tr>
+        </thead>
+        <tbody id="tbody-riwayat"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" style="text-align:right; font-weight:bold;">Sisa Tagihan:</td>
+                <td class="right" style="font-weight:bold; color:red;" id="sisa-bayar"></td>
+            </tr>
+        </tfoot>
+    </table>
+    <div id="terbilang-sisa" class="sub-terbilang" style="text-align: right;"></div>
+</div>
+
+<!-- 🎯 BAGIAN TANDA TANGAN (1 Kotak Saja di Kanan) -->
 <div class="flex" style="margin-top:10px; align-items: flex-start;">
-    <div style="border:1px solid #000; padding:8px; flex:1; box-sizing: border-box; min-height: 90px;">
-        <b>Cara Pembayaran:</b><br>
-        Silakan lakukan pembayaran melalui transfer bank ke:<br>
-        <b>BRI 6691 0101 5718 506</b> a/n Yohanes purwanto
-    </div>
-    <div class="sign-box">
+    <div style="flex: 1;"></div>
+    <div style="border:1px solid #000; width:220px; text-align:center; padding:10px 5px; box-sizing: border-box;">
         Disiapkan Oleh<br><br><br>
         ( <b>Admin</b> )<br>
-        Tgl: ....................
+        <span style="font-size: 11px;">Tgl: ....................</span>
     </div>
 </div>
 
@@ -282,10 +268,8 @@ th, td{ padding:4px; }
 <script>
 const p = new URLSearchParams(window.location.search);
 
-// Fungsi terbilang angka nominal
 function terbilang(nilai) {
     const huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
-
     function penyebut(n) {
         n = Math.floor(n);
         if (n < 0) return "";
@@ -299,9 +283,31 @@ function terbilang(nilai) {
         if (n < 1000000000) return penyebut(Math.floor(n / 1000000)) + " juta " + penyebut(n % 1000000);
         return "";
     }
-
     if (nilai === 0) return "nol";
     return penyebut(nilai).replace(/\s+/g, ' ').trim();
+}
+
+function updateStatusKeterangan(sisaTagihan) {
+    let statusTitle = "";
+    let statusColor = "";
+    let deskripsi = "";
+
+    if (sisaTagihan > 0) {
+        statusTitle = "BELUM LUNAS";
+        statusColor = "#dc2626"; 
+        deskripsi = `Terdapat sisa tagihan berjalan sebesar <b>Rp ${sisaTagihan.toLocaleString("id-ID")}</b>.<br>Silakan transfer ke <b>BRI 6691 0101 5718 506</b> a/n Yohanes Purwanto.`;
+    } else {
+        statusTitle = "LUNAS";
+        statusColor = "#16a34a"; 
+        deskripsi = `Transaksi ini telah lunas. Terima kasih atas pembayaran Anda.<br>Rekening Transfer: <b>BRI 6691 0101 5718 506</b> a/n Yohanes Purwanto.`;
+    }
+
+    document.getElementById("keterangan-box").innerHTML = `
+        <div style="font-size:14px; font-weight:900; color:${statusColor}; border-bottom:2px solid ${statusColor}; padding-bottom:3px; margin-bottom:5px;">
+            STATUS: ${statusTitle}
+        </div>
+        <div style="font-size:11px; line-height:1.4;">${deskripsi}</div>
+    `;
 }
 
 function renderTable() {
@@ -338,19 +344,23 @@ function renderTable() {
     document.getElementById("terbilang").innerText = "Terbilang : " + terbilang(grandTotal) + " rupiah";
 
     let topValue = (p.get("top") || "").toUpperCase();
-    if (topValue !== "-" && topValue !== "") {
-        renderRiwayat(grandTotal);
-    }
+    renderRiwayat(grandTotal, topValue);
 }
 
-function renderRiwayat(grandTotal) {
+function renderRiwayat(grandTotal, topValue) {
     let bayarParam = p.get("bayar") || "";
     
     if (!bayarParam) {
-        document.getElementById("section-riwayat").style.display = "block";
-        document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic; padding:10px;">Belum ada riwayat pembayaran</td></tr>`;
-        document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
-        document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(grandTotal) + " rupiah";
+        if (topValue === "CASH" || topValue === "-" || topValue === "") {
+            document.getElementById("section-riwayat").style.display = "none";
+            updateStatusKeterangan(0); 
+        } else {
+            document.getElementById("section-riwayat").style.display = "block";
+            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran tercatat</td></tr>`;
+            document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
+            document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(grandTotal) + " rupiah";
+            updateStatusKeterangan(grandTotal); 
+        }
         return;
     }
 
@@ -367,10 +377,15 @@ function renderRiwayat(grandTotal) {
 
         totalMasuk += jumlah;
 
+        let badgeClass = "badge-default";
+        let textJenis = jenisBayar.toUpperCase();
+        if(textJenis.includes("CASH") || textJenis.includes("TUNAI")) badgeClass = "badge-cash";
+        else if(textJenis.includes("TRANSFER")) badgeClass = "badge-transfer";
+
         tbodyRiwayat += `
         <tr>
             <td>${tglBayar}</td>
-            <td>${jenisBayar}</td>
+            <td><span class="badge ${badgeClass}">${jenisBayar}</span></td>
             <td class="right">${jumlah.toLocaleString("id-ID")}</td>
         </tr>
         `;
@@ -393,6 +408,7 @@ function renderRiwayat(grandTotal) {
     }
     
     document.getElementById("section-riwayat").style.display = "block";
+    updateStatusKeterangan(sisaBayar);
 }
 
 function setHeader(){
@@ -406,19 +422,17 @@ function setHeader(){
     document.getElementById("xpdc").innerText = p.get("xpdc") || "-";
 }
 
-// 🎯 PROSES UTAMA STRATEGI 4 TOMBOL UNTUK FAKTUR PENJUALAN
 window.onload = function(){
     renderTable();
     setHeader();
 
     const noFaktur = p.get("no") || "Tanpa_Nomor";
-    const namaCust = p.get("customer") || "Pelanggan";
     const grandTotal = Number(p.get("grand")) || 0;
 
     Swal.fire({
         title: 'FAKTUR PENJUALAN SIAP!',
         html: `
-            Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan pilih tindakan bapak:
+            Faktur No: <b>${noFaktur}</b> berhasil dimuat.<br>Silakan pilih tindakan:
             <br><br>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center;">
                 <button id="btn-cetak" class="swal2-styled" style="background-color: #10b981; width: 85%; margin: 0; padding: 10px; border-radius: 4px; color: #fff; border: none; font-weight: bold; cursor: pointer;">
@@ -439,7 +453,7 @@ window.onload = function(){
             </div>
         `,
         icon: 'info',
-        showConfirmButton: false, // Nonaktifkan tombol bawaan agar bersih
+        showConfirmButton: false,
         allowOutsideClick: false,
         didOpen: () => {
             const content = Swal.getHtmlContainer();
@@ -454,13 +468,11 @@ window.onload = function(){
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 🖨️ AKSI 1: CETAK FAKTUR PENJUALAN
             content.querySelector('#btn-cetak').addEventListener('click', () => {
                 Swal.close();
                 window.print();
             });
 
-            // 📄 AKSI 2: BAGIKAN PDF (Melalui laci share bawaan browser HP modern)
             content.querySelector('#btn-share-laci').addEventListener('click', () => {
                 Swal.fire({
                     title: 'Menyiapkan PDF...',
@@ -492,7 +504,6 @@ window.onload = function(){
                 }, 800);
             });
 
-            // 📲 AKSI 3: SIMPAN PDF & KIRIM TEKS NOTA (Solusi anti-gagal untuk semua browser HP)
             content.querySelector('#btn-simpan-teks').addEventListener('click', () => {
                 Swal.fire({
                     title: 'Mengunduh PDF...',
@@ -529,7 +540,6 @@ window.onload = function(){
                 }, 800);
             });
 
-            // 🛑 AKSI 4: TUTUP FAKTUR
             content.querySelector('#btn-tutup-faktur').addEventListener('click', () => {
                 Swal.close();
             });
