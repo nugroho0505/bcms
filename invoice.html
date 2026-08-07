@@ -212,10 +212,10 @@ th, td{ padding:4px; }
 
 <div id="terbilang">Terbilang : -</div>
 
-<!-- 🎯 LAYOUT TENGAH: KETERANGAN DINAMIS SEJAJAR DENGAN SUMMARY -->
+<!-- 🎯 LAYOUT TENGAH: KETERANGAN STATUS DINAMIS -->
 <div class="layout-tengah">
     <div class="box-keterangan" id="keterangan-box">
-        <!-- Konten Keterangan Dinamis akan diinject lewat JS -->
+        <!-- Konten Keterangan Status Dinamis akan diinject lewat JS -->
     </div>
 
     <div class="box-summary">
@@ -229,7 +229,7 @@ th, td{ padding:4px; }
     </div>
 </div>
 
-<!-- 🎯 LAYOUT BAWAH: RIWAYAT FULL WIDTH -->
+<!-- 🎯 LAYOUT BAWAH: RIWAYAT 4 KOLOM (Tgl, Jenis, Keterangan, Nominal) -->
 <div class="box-riwayat" id="section-riwayat" style="display:none;">
     <table class="riwayat-table">
         <thead>
@@ -237,15 +237,16 @@ th, td{ padding:4px; }
                 <th colspan="4" style="background:#eee; text-align:left;">Riwayat Pembayaran :</th>
             </tr>
             <tr>
-                <th style="width: 20%; background:#f9f9f9;">Tgl Bayar</th>
-                <th style="width: 20%; background:#f9f9f9;">Jenis</th>
-                <th style="width: 60%; text-align:right; background:#f9f9f9;">Bayar</th>
+                <th style="width: 15%; background:#f9f9f9;">Tgl Bayar</th>
+                <th style="width: 15%; background:#f9f9f9;">Jenis</th>
+                <th style="width: 50%; background:#f9f9f9;">Keterangan</th>
+                <th style="width: 20%; text-align:right; background:#f9f9f9;">Nominal</th>
             </tr>
         </thead>
         <tbody id="tbody-riwayat"></tbody>
         <tfoot>
             <tr>
-                <td colspan="2" style="text-align:right; font-weight:bold;">Sisa Tagihan:</td>
+                <td colspan="3" style="text-align:right; font-weight:bold;">Sisa Tagihan:</td>
                 <td class="right" style="font-weight:bold; color:red;" id="sisa-bayar"></td>
             </tr>
         </tfoot>
@@ -253,9 +254,13 @@ th, td{ padding:4px; }
     <div id="terbilang-sisa" class="sub-terbilang" style="text-align: right;"></div>
 </div>
 
-<!-- 🎯 BAGIAN TANDA TANGAN (1 Kotak Saja di Kanan) -->
+<!-- 🎯 BAGIAN BAWAH: KETERANGAN TRANSFER SEJAJAR KOTAK TTD ADMIN -->
 <div class="flex" style="margin-top:10px; align-items: flex-start;">
-    <div style="flex: 1;"></div>
+    <div style="border:1px solid #000; padding:8px; flex:1; box-sizing: border-box; min-height: 90px; font-size: 11px;">
+        <b>Keterangan Pembayaran:</b><br>
+        Silakan melakukan transfer pembayaran melalui:<br>
+        <b>BRI 6691 0101 5718 506</b> a/n Yohanes Purwanto
+    </div>
     <div style="border:1px solid #000; width:220px; text-align:center; padding:10px 5px; box-sizing: border-box;">
         Disiapkan Oleh<br><br><br>
         ( <b>Admin</b> )<br>
@@ -295,11 +300,11 @@ function updateStatusKeterangan(sisaTagihan) {
     if (sisaTagihan > 0) {
         statusTitle = "BELUM LUNAS";
         statusColor = "#dc2626"; 
-        deskripsi = `Terdapat sisa tagihan berjalan sebesar <b>Rp ${sisaTagihan.toLocaleString("id-ID")}</b>.<br>Silakan transfer ke <b>BRI 6691 0101 5718 506</b> a/n Yohanes Purwanto.`;
+        deskripsi = `Terdapat sisa tagihan berjalan sebesar <b>Rp ${sisaTagihan.toLocaleString("id-ID")}</b> yang belum terbayarkan.`;
     } else {
         statusTitle = "LUNAS";
         statusColor = "#16a34a"; 
-        deskripsi = `Transaksi ini telah lunas. Terima kasih atas pembayaran Anda.<br>Rekening Transfer: <b>BRI 6691 0101 5718 506</b> a/n Yohanes Purwanto.`;
+        deskripsi = `Transaksi ini telah diselesaikan dan dibayar penuh. Terima kasih.`;
     }
 
     document.getElementById("keterangan-box").innerHTML = `
@@ -356,9 +361,9 @@ function renderRiwayat(grandTotal, topValue) {
             updateStatusKeterangan(0); 
         } else {
             document.getElementById("section-riwayat").style.display = "block";
-            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran tercatat</td></tr>`;
+            document.getElementById("tbody-riwayat").innerHTML = `<tr><td colspan="4" style="text-align:center; font-style:italic;">Belum ada riwayat pembayaran tercatat</td></tr>`;
             document.getElementById("sisa-bayar").innerText = grandTotal.toLocaleString("id-ID");
-            document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(grandTotal) + " rupiah";
+            document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(grandTotal) + " rupiah";
             updateStatusKeterangan(grandTotal); 
         }
         return;
@@ -373,7 +378,8 @@ function renderRiwayat(grandTotal, topValue) {
         let col = row.split("|");
         let tglBayar   = col[0] || "-";
         let jenisBayar = col[1] || "-";
-        let jumlah     = Number(col[2]) || 0;
+        let ketBayar   = col[2] || "-"; // Kolom Keterangan
+        let jumlah     = Number(col[3]) || 0; // Nominal bergeser ke indeks 3
 
         totalMasuk += jumlah;
 
@@ -386,6 +392,7 @@ function renderRiwayat(grandTotal, topValue) {
         <tr>
             <td>${tglBayar}</td>
             <td><span class="badge ${badgeClass}">${jenisBayar}</span></td>
+            <td>${ketBayar}</td>
             <td class="right">${jumlah.toLocaleString("id-ID")}</td>
         </tr>
         `;
@@ -402,7 +409,7 @@ function renderRiwayat(grandTotal, topValue) {
         document.getElementById("terbilang-sisa").style.fontWeight = "bold";
         document.getElementById("terbilang-sisa").style.color = "green";
     } else {
-        document.getElementById("terbilang-sisa").innerText = "*Terbilang Sisa: " + terbilang(sisaBayar) + " rupiah";
+        document.getElementById("terbilang-sisa").innerText = "*Sisa: " + terbilang(sisaBayar) + " rupiah";
         document.getElementById("terbilang-sisa").style.fontWeight = "normal";
         document.getElementById("terbilang-sisa").style.color = "#333";
     }
